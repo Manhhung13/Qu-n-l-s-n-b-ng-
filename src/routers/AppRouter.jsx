@@ -1,6 +1,6 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-
+import PrivateRoute from "../components/PrivateRoute";
 // Auth
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
@@ -32,41 +32,49 @@ export default function AppRouter() {
     <BrowserRouter>
       <Routes>
         {/* Auth routes */}
-        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
         {/* User routes */}
 
         <Route
-          path="/"
+          path="/home"
           element={
-            <UserLayout>
-              <Home />
-            </UserLayout>
+            <PrivateRoute>
+              <UserLayout>
+                <Home />
+              </UserLayout>
+            </PrivateRoute>
           }
         />
         <Route
           path="/booking"
           element={
-            <UserLayout>
-              <Booking />
-            </UserLayout>
+            <PrivateRoute>
+              <UserLayout>
+                <Booking />
+              </UserLayout>
+            </PrivateRoute>
           }
         />
         <Route
           path="/history"
           element={
-            <UserLayout>
-              <History />
-            </UserLayout>
+            <PrivateRoute>
+              <UserLayout>
+                <History />
+              </UserLayout>
+            </PrivateRoute>
           }
         />
         <Route
           path="/notifications"
           element={
-            <UserLayout>
-              <Notifications />
-            </UserLayout>
+            <PrivateRoute>
+              <UserLayout>
+                <Notifications />
+              </UserLayout>
+            </PrivateRoute>
           }
         />
 
@@ -74,33 +82,41 @@ export default function AppRouter() {
         <Route
           path="/manager/dashboard"
           element={
-            <ManagerLayout>
-              <ManagerDashboard />
-            </ManagerLayout>
+            <PrivateRoute>
+              <ManagerLayout>
+                <ManagerDashboard />
+              </ManagerLayout>
+            </PrivateRoute>
           }
         />
         <Route
           path="/manager/fields"
           element={
-            <ManagerLayout>
-              <Fields />
-            </ManagerLayout>
+            <PrivateRoute>
+              <ManagerLayout>
+                <Fields />
+              </ManagerLayout>
+            </PrivateRoute>
           }
         />
         <Route
           path="/manager/customers"
           element={
-            <ManagerLayout>
-              <Customers />
-            </ManagerLayout>
+            <PrivateRoute>
+              <ManagerLayout>
+                <Customers />
+              </ManagerLayout>
+            </PrivateRoute>
           }
         />
         <Route
           path="/manager/checkin-checkout"
           element={
-            <ManagerLayout>
-              <CheckinCheckout />
-            </ManagerLayout>
+            <PrivateRoute>
+              <ManagerLayout>
+                <CheckinCheckout />
+              </ManagerLayout>
+            </PrivateRoute>
           }
         />
 
@@ -108,25 +124,31 @@ export default function AppRouter() {
         <Route
           path="/admin/reports"
           element={
-            <AdminLayout>
-              <AdminReports />
-            </AdminLayout>
+            <PrivateRoute>
+              <AdminLayout>
+                <AdminReports />
+              </AdminLayout>
+            </PrivateRoute>
           }
         />
         <Route
           path="/admin/manage-staff"
           element={
-            <AdminLayout>
-              <ManageStaff />
-            </AdminLayout>
+            <PrivateRoute>
+              <AdminLayout>
+                <ManageStaff />
+              </AdminLayout>
+            </PrivateRoute>
           }
         />
         <Route
           path="/admin/pricing"
           element={
-            <AdminLayout>
-              <Pricing />
-            </AdminLayout>
+            <PrivateRoute>
+              <AdminLayout>
+                <Pricing />
+              </AdminLayout>
+            </PrivateRoute>
           }
         />
 

@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosClient = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: "http://localhost:5000",
 });
 
 // Interceptor: tự động thêm token vào header nếu có

@@ -36,7 +36,7 @@ export default function Login() {
       const res = await axiosClient.post("/users/login", form);
       setUser(res.data); // Lưu user/token toàn cục
       localStorage.setItem("user", JSON.stringify(res.data)); // lưu phiên
-      navigate("/"); // Đổi route về trang chính hoặc dashboard
+      navigate("/home"); // Đổi route về trang chính hoặc dashboard
     } catch (err) {
       setError(
         err?.response?.data?.message ||
