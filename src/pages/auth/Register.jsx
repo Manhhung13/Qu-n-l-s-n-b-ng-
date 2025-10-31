@@ -120,7 +120,7 @@ export default function Register() {
             value={form.email}
             onChange={handleChange}
             required
-            type="email"
+            //type="email"
           />
           <TextField
             label="Mật khẩu"

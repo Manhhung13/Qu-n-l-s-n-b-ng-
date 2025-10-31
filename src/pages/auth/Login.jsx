@@ -36,7 +36,13 @@ export default function Login() {
       const res = await axiosClient.post("/users/login", form);
       setUser(res.data); // Lưu user/token toàn cục
       localStorage.setItem("user", JSON.stringify(res.data)); // lưu phiên
-      navigate("/home"); // Đổi route về trang chính hoặc dashboard
+      if (res.data.user.role === "admin") {
+        navigate("/admin/reports"); // chuyển đến trang admin
+      } else if (res.data.user.role === "manager") {
+        navigate("/manager/dashboard"); // chuyển đến trang manager
+      } else {
+        navigate("/home"); // role khác chuyển về home
+      }
     } catch (err) {
       setError(
         err?.response?.data?.message ||
@@ -67,7 +73,7 @@ export default function Login() {
             Đăng nhập hệ thống
           </Typography>
           <TextField
-            label="Email"
+            label="Username or Email"
             name="email"
             value={form.email}
             onChange={handleChange}
