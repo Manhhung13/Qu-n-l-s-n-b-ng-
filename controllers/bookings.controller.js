@@ -14,10 +14,10 @@ exports.listBookings = async (req, res) => {
 };
 
 exports.createBooking = async (req, res) => {
-  const { user_id, field_id, date, start_time, end_time, note } = req.body;
+  const { user_id, field_id, date, start_time, end_time } = req.body;
   await db.query(
-    "INSERT INTO bookings (user_id, field_id, date, start_time, end_time, note) VALUES (?, ?, ?, ?, ?, ?)",
-    [user_id, field_id, date, start_time, end_time, note]
+    "INSERT INTO bookings (user_id, field_id, date, start_time, end_time) VALUES (?, ?, ?, ?, ?)",
+    [user_id, field_id, date, start_time, end_time]
   );
   res.json({ message: "Đặt sân thành công!" });
 };
