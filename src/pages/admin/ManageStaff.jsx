@@ -188,7 +188,7 @@ export default function ManageStaff() {
               <TextField
                 required
                 label="Email"
-                type="email"
+                // type="email"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
               />
