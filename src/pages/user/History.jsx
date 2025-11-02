@@ -32,7 +32,7 @@ export default function History() {
       setError("");
       try {
         // API /bookings?userId={...} hoặc tự động từ token đăng nhập
-        const res = await axiosClient.get("/bookings/history");
+        const res = await axiosClient.get("/bookings/");
         setHistory(res.data);
       } catch (err) {
         setError("Không thể lấy lịch sử đặt sân!");
@@ -78,7 +78,11 @@ export default function History() {
                     <TableCell>
                       {new Date(item.date).toLocaleDateString("vi-VN")}
                     </TableCell>
-                    <TableCell>{item.timeSlot}</TableCell>
+                    <TableCell>
+                      {item.start_time && item.end_time
+                        ? `${item.start_time}-${item.end_time}`
+                        : "?"}
+                    </TableCell>
                     <TableCell>
                       {item.field?.price
                         ? item.field.price.toLocaleString("vi-VN") + " VND"
