@@ -7,22 +7,22 @@ import Sidebar from "../components/Sidebar";
 const managerMenu = [
   {
     label: "Dashboard",
-    path: "/dashboard",
+    path: "/manager/dashboard",
     icon: <i className="fa-solid fa-chart-line" />,
   },
   {
     label: "Sân bóng",
-    path: "/fields",
+    path: "/manager/fields",
     icon: <i className="fa-solid fa-futbol" />,
   },
   {
     label: "Khách hàng",
-    path: "/customers",
+    path: "/manager/customers",
     icon: <i className="fa-solid fa-users" />,
   },
   {
     label: "Check-in/Check-out",
-    path: "/checkin-checkout",
+    path: "/manager/checkin-checkout",
     icon: <i className="fa-solid fa-ticket-alt" />,
   },
   // Có thể mở rộng thêm mục nếu cần

@@ -8,14 +8,14 @@ export default function Header() {
         <Typography variant="h6" sx={{ flexGrow: 1 }}>
           Đặt Sân Online
         </Typography>
-        <Button color="inherit" component={Link} to="/">
+        <Button color="inherit" component={Link} to="/home">
           Trang chủ
         </Button>
         <Button color="inherit" component={Link} to="/booking">
           Đặt sân
         </Button>
         <Button color="inherit" component={Link} to="/login">
-          Đăng nhập
+          Đăng xuất
         </Button>
       </Toolbar>
     </AppBar>

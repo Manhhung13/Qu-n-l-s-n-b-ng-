@@ -15,7 +15,7 @@ import { Link, useLocation } from "react-router-dom";
 
 // Menu mẫu cho user, có thể props từ ngoài để tái sử dụng cho từng vai trò
 const menu = [
-  { label: "Trang chủ", icon: <HomeIcon />, path: "/" },
+  { label: "Trang chủ", icon: <HomeIcon />, path: "/home" },
   { label: "Đặt sân", icon: <AccountCircleIcon />, path: "/booking" },
   { label: "Lịch sử", icon: <HistoryIcon />, path: "/history" },
   { label: "Thông báo", icon: <NotificationsIcon />, path: "/notifications" },
