@@ -1,7 +1,4 @@
 const db = require("../db");
-
-const db = require("../db");
-
 // Lấy danh sách booking theo ngày (có kèm thông tin sân và khách hàng)
 exports.listBookings = async (req, res) => {
   try {
@@ -65,11 +62,49 @@ exports.listBookings = async (req, res) => {
   }
 };
 
+// Đảm bảo có middleware xác thực gán req.user (ví dụ, Passport hoặc JWT)
 exports.createBooking = async (req, res) => {
-  const { user_id, field_id, date, start_time, end_time } = req.body;
-  await db.query(
-    "INSERT INTO bookings (user_id, field_id, date, start_time, end_time) VALUES (?, ?, ?, ?, ?)",
-    [user_id, field_id, date, start_time, end_time]
-  );
-  res.json({ message: "Đặt sân thành công!" });
+  try {
+    const user_id = req.user.id;
+    const {
+      customerName,
+      phone,
+      email,
+      fieldId,
+      date,
+      timeSlot, // dạng "6:00 - 8:00"
+    } = req.body;
+
+    // Tách start_time và end_time từ timeSlot
+    const [start_time, end_time] = timeSlot.split(" ");
+    // KIỂM TRA TRÙNG LỊCH ĐẶT SÂN
+    const [existingBookings] = await db.query(
+      `
+        SELECT * FROM bookings
+        WHERE field_id = ?
+          AND date = ?
+          AND NOT (
+              end_time <= ? OR start_time >= ?
+          )
+      `,
+      [fieldId, date, start_time, end_time]
+    );
+
+    if (existingBookings.length > 0) {
+      return res.status(400).json({
+        message: "Sân này đã được đặt ở khung giờ đã chọn!",
+      });
+    }
+
+    await db.query(
+      `INSERT INTO bookings (user_id, name, phone, email, field_id, date, start_time, end_time)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [user_id, customerName, phone, email, fieldId, date, start_time, end_time]
+    );
+    res.json({ message: "Đặt sân thành công!" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Đặt sân thất bại!", error: error.message });
+  }
 };
