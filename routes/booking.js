@@ -1,13 +1,11 @@
 const express = require("express");
-const {
-  listBookings,
-  createBooking,
-} = require("../controllers/bookings.controller");
-const { listHistory } = require("../controllers/history.controller");
-const auth = require("../middlewares/auth");
-const requireRole = require("../middlewares/role");
 const router = express.Router();
-router.get("/", listBookings);
-router.post("/", auth, createBooking);
-router.get("/history", auth, listHistory);
+const bookingController = require("../controllers/bookings.controller");
+const auth = require("../middlewares/auth");
+// POST /bookings (Tạo booking mới)
+router.post("/", auth, bookingController.createBooking);
+
+// GET /fields (Db sân cho chọn sân trong form)
+router.get("/fields", bookingController.getFields);
+
 module.exports = router;
