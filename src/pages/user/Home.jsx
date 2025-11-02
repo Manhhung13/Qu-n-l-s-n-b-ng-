@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import demoFieldImage from "../../assets/san-bong-mini.jpg";
+
 import {
   Grid,
   Box,
@@ -151,7 +153,7 @@ export default function Home() {
                     component="img"
                     height="150"
                     alt={field.name}
-                    image={field.imageUrl || "/default-field.jpg"}
+                    image={demoFieldImage}
                   />
                   <CardContent>
                     <Typography variant="h6" noWrap>
