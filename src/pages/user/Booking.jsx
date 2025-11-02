@@ -115,7 +115,7 @@ export default function Booking() {
               onChange={(e) => setForm({ ...form, field: e.target.value })}
             >
               {fields.map((f) => (
-                <MenuItem key={f._id} value={f._id}>
+                <MenuItem key={f.id} value={f.id}>
                   {f.name} - {f.type} ({f.location})
                 </MenuItem>
               ))}
