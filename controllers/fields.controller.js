@@ -1,37 +1,43 @@
 const db = require("../db");
+exports.getFields = async (req, res) => {
+  // <-- phải thêm 'async' ở đây
+  const { type, status, price, q } = req.query;
+  console.log("type:", type, "| status:", status, "| price:", price, "| q:", q);
 
-// Lấy danh sách sân bóng
-exports.listFields = async (req, res) => {
-  const [rows] = await db.query("SELECT * FROM fields");
-  res.json(rows);
-};
+  let sql = "SELECT * FROM fields WHERE 1=1";
+  let params = [];
 
-// Thêm sân bóng (chỉ admin, manager)
-exports.addField = async (req, res) => {
-  const { name, type, location, image_url, price, status, description } =
-    req.body;
-  await db.query(
-    "INSERT INTO fields (name, type, location, image_url, price, status, description) VALUES (?, ?, ?, ?, ?, ?, ?)",
-    [name, type, location, image_url, price, status, description]
-  );
-  res.json({ message: "Thêm sân thành công" });
-};
+  if (type) {
+    console.log("LOG type trước push:", type, typeof type);
+    sql += " AND type = ?";
+    params.push(type);
+  }
+  if (status) {
+    sql += " AND status = ?";
+    params.push(status);
+  }
+  if (price) {
+    if (price === "1") {
+      sql += " AND price < 300000";
+    } else if (price === "2") {
+      sql += " AND price >= 300000 AND price <= 500000";
+    } else if (price === "3") {
+      sql += " AND price > 500000";
+    }
+  }
+  if (q) {
+    sql += " AND (name LIKE ? OR location LIKE ?)";
+    params.push(`%${q}%`, `%${q}%`);
+  }
+  console.log("SQL:", sql);
+  console.log("Params:", params);
 
-// Xóa sân bóng (chỉ admin)
-exports.deleteField = async (req, res) => {
-  const fieldId = req.params.id;
-  await db.query("DELETE FROM fields WHERE id = ?", [fieldId]);
-  res.json({ message: "Xóa sân thành công" });
-};
-
-// Sửa/cập nhật sân bóng (chỉ admin, manager)
-exports.updateField = async (req, res) => {
-  const fieldId = req.params.id;
-  const { name, type, location, image_url, price, status, description } =
-    req.body;
-  await db.query(
-    "UPDATE fields SET name=?, type=?, location=?, image_url=?, price=?, status=?, description=? WHERE id=?",
-    [name, type, location, image_url, price, status, description, fieldId]
-  );
-  res.json({ message: "Cập nhật sân thành công" });
+  try {
+    const [results] = await db.query(sql, params);
+    console.log("DB Results:", results);
+    res.json(results);
+  } catch (err) {
+    console.log("DB Error:", err);
+    res.status(500).json({ message: "Lỗi truy vấn dữ liệu!" });
+  }
 };
