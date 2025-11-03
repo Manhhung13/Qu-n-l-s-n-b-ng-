@@ -1,16 +1,8 @@
 const express = require("express");
-const {
-  listNotifications,
-  notifyBookingConfirm,
-} = require("../controllers/notifications.controller");
+const notificationController = require("../controllers/notifications.controller");
 const auth = require("../middlewares/auth");
-const requireRole = require("../middlewares/role");
 const router = express.Router();
-router.get("/", auth, listNotifications);
-router.post(
-  "/booking-confirm",
-  auth,
-  requireRole("manager", "admin"),
-  notifyBookingConfirm
-);
+router.get("/", auth, notificationController.getNotifications);
+router.put("/:id/confirm", auth, notificationController.confirmNotification);
+router.delete("/:id", auth, notificationController.deleteNotification);
 module.exports = router;
