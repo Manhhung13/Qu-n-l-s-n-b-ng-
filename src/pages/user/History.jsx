@@ -32,7 +32,7 @@ export default function History() {
       setError("");
       try {
         // API /bookings?userId={...} hoặc tự động từ token đăng nhập
-        const res = await axiosClient.get("/bookings/");
+        const res = await axiosClient.get("/bookings/getHistory");
         setHistory(res.data);
       } catch (err) {
         setError("Không thể lấy lịch sử đặt sân!");
