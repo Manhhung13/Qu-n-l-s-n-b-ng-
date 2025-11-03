@@ -81,3 +81,46 @@ exports.getFields = async (req, res) => {
     res.status(500).json({ message: "Không lấy được danh sách sân." });
   }
 };
+
+exports.getBookingHistory = async (req, res) => {
+  const userId = req.user.id; // User ID từ xác thực, ví dụ middleware bỏ user vào req
+
+  if (!userId) {
+    return res
+      .status(401)
+      .json({ message: "Unauthorized: User chưa đăng nhập" });
+  }
+
+  try {
+    const sql = `
+      SELECT 
+        b.id AS _id, b.date, b.start_time, b.end_time, b.status,
+        f.name, f.type, f.location, f.price
+      FROM bookings b
+      INNER JOIN fields f ON b.field_id = f.id
+      WHERE b.user_id = ?
+      ORDER BY b.date DESC, b.start_time
+    `;
+
+    const [rows] = await db.execute(sql, [userId]);
+
+    const history = rows.map((item) => ({
+      _id: item._id,
+      date: item.date,
+      start_time: item.start_time,
+      end_time: item.end_time,
+      status: item.status,
+      field: {
+        name: item.name,
+        type: item.type,
+        location: item.location,
+        price: item.price,
+      },
+    }));
+
+    res.json(history);
+  } catch (error) {
+    console.error("Lỗi lấy lịch sử:", error);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+};
