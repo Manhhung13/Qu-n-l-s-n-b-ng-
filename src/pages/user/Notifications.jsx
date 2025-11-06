@@ -80,11 +80,11 @@ export default function Notifications() {
               <React.Fragment key={noti._id}>
                 <ListItem>
                   <ListItemText
-                    primary={noti.message}
+                    primary={noti.content}
                     secondary={
                       <>
                         <Typography component="span" variant="caption">
-                          {new Date(noti.createdAt).toLocaleString("vi-VN")}
+                          {new Date(noti.created_at).toLocaleString("vi-VN")}
                         </Typography>
                         {" — "}
                         <Chip

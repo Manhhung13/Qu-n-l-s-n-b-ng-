@@ -20,23 +20,33 @@ import {
 } from "@mui/material";
 import ManagerLayout from "../../layouts/ManagerLayout";
 import axiosClient from "../../api/axiosClient";
-import { Man } from "@mui/icons-material";
 
 export default function CheckinCheckout() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [openDialog, setOpenDialog] = useState(false);
+
+  // Check-in dialog states
+  const [openCheckinDialog, setOpenCheckinDialog] = useState(false);
+  const [checkinBookingId, setCheckinBookingId] = useState(null);
+
+  const [services, setServices] = useState([]);
+  const [selectedServices, setSelectedServices] = useState([]);
+  const getTotalServicesFee = () =>
+    selectedServices.reduce((sum, s) => sum + s.price * s.quantity, 0);
+
+  // Check-out dialog states
+  const [openCheckoutDialog, setOpenCheckoutDialog] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [extraFee, setExtraFee] = useState("");
 
-  // Lấy booking cần check-in/out trong ngày
+  // Fetch bookings
   const fetchBookings = async () => {
     setLoading(true);
     setError("");
     try {
       const today = new Date().toISOString().slice(0, 10);
-      const res = await axiosClient.get(`/bookings?date=${today}`);
+      const res = await axiosClient.get(`/manager/list_bookings?date=${today}`);
       setBookings(res.data);
     } catch {
       setError("Không thể tải danh sách booking!");
@@ -48,41 +58,75 @@ export default function CheckinCheckout() {
     fetchBookings();
   }, []);
 
-  // Mở dialog bổ sung phí/dịch vụ phát sinh khi check-out
-  const handleOpenDialog = (booking) => {
-    setSelectedBooking(booking);
-    setExtraFee(booking.extraFee || "");
-    setOpenDialog(true);
-  };
-
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-    setSelectedBooking(null);
-  };
-
-  // Check-in: Đổi trạng thái booking
-  const handleCheckin = async (id) => {
+  // ----- CHECK-IN HANDLING -----
+  // Mở Dialog check-in & load services từ backend
+  const handleOpenCheckinDialog = async (booking) => {
+    setCheckinBookingId(booking.id);
     try {
-      await axiosClient.put(`/bookings/${id}/checkin`);
+      const res = await axiosClient.get("/services");
+      setServices(res.data);
+      setSelectedServices([]);
+    } catch {}
+    setOpenCheckinDialog(true);
+  };
+
+  // Chọn dịch vụ ngoài và số lượng
+  const handleServiceCheck = (service, checked) => {
+    if (checked) {
+      setSelectedServices((prev) => [...prev, { ...service, quantity: 1 }]);
+    } else {
+      setSelectedServices((prev) => prev.filter((s) => s.id !== service.id));
+    }
+  };
+  const handleServiceQuantityChange = (serviceId, quantity) => {
+    setSelectedServices((prev) =>
+      prev.map((s) =>
+        s.id === serviceId ? { ...s, quantity: quantity < 1 ? 1 : quantity } : s
+      )
+    );
+  };
+
+  // Submit check-in (gửi dịch vụ ngoài lên backend)
+  const handleCheckin = async () => {
+    try {
+      await axiosClient.put(`/manager/checkin/${checkinBookingId}`, {
+        services: selectedServices.map((s) => ({
+          serviceId: s.id,
+          quantity: s.quantity,
+        })),
+        totalServicesFee: getTotalServicesFee(),
+      });
       await fetchBookings();
+      setOpenCheckinDialog(false);
+      setCheckinBookingId(null);
     } catch {
-      setError("Không thể check-in!");
+      setError("Không thể xác nhận!");
     }
   };
 
-  // Check-out: Đổi trạng thái booking, cập nhật extraFee (nếu có)
+  // ----- CHECK-OUT HANDLING -----
+  const handleOpenCheckoutDialog = (booking) => {
+    setSelectedBooking(booking);
+    setExtraFee(booking.extraFee || "");
+    setOpenCheckoutDialog(true);
+  };
+  const handleCloseCheckoutDialog = () => {
+    setOpenCheckoutDialog(false);
+    setSelectedBooking(null);
+  };
   const handleCheckout = async () => {
     try {
-      await axiosClient.put(`/bookings/${selectedBooking._id}/checkout`, {
+      await axiosClient.put(`/manager/checkout/${selectedBooking.id}`, {
         extraFee: extraFee ? parseInt(extraFee) : 0,
       });
       await fetchBookings();
-      handleCloseDialog();
+      handleCloseCheckoutDialog();
     } catch {
       setError("Không thể check-out!");
     }
   };
 
+  // ---- UI ----
   return (
     <ManagerLayout>
       <Container sx={{ mt: 4 }}>
@@ -108,19 +152,21 @@ export default function CheckinCheckout() {
               </TableHead>
               <TableBody>
                 {bookings.map((booking) => (
-                  <TableRow key={booking._id}>
-                    <TableCell>{booking.field?.name || "?"}</TableCell>
-                    <TableCell>{booking.customerName || "?"}</TableCell>
+                  <TableRow key={booking.id}>
+                    <TableCell>{booking.fieldName || "?"}</TableCell>
+                    <TableCell>{booking.name || "?"}</TableCell>
                     <TableCell>
                       {booking.date
                         ? new Date(booking.date).toLocaleDateString("vi-VN")
                         : ""}
                       {" | "}
-                      {booking.timeSlot}
+                      {booking.start_time && booking.end_time
+                        ? `${booking.start_time} - ${booking.end_time}`
+                        : "?"}
                     </TableCell>
                     <TableCell>
-                      {booking.field?.price
-                        ? booking.field.price.toLocaleString("vi-VN")
+                      {booking.fieldPrice
+                        ? booking.fieldPrice.toLocaleString("vi-VN")
                         : ""}
                       {booking.extraFee ? (
                         <span>
@@ -135,11 +181,11 @@ export default function CheckinCheckout() {
                       <Chip
                         label={booking.status}
                         color={
-                          booking.status === "Đang sử dụng"
+                          booking.status === "Đã xác nhận"
                             ? "warning"
                             : booking.status === "Hoàn thành"
                             ? "success"
-                            : booking.status === "Đặt"
+                            : booking.status === "Chờ xác nhận"
                             ? "info"
                             : "default"
                         }
@@ -147,22 +193,22 @@ export default function CheckinCheckout() {
                       />
                     </TableCell>
                     <TableCell align="center">
-                      {booking.status === "Đặt" && (
+                      {booking.status === "Chờ xác nhận" && (
                         <Button
                           size="small"
                           color="success"
                           variant="outlined"
-                          onClick={() => handleCheckin(booking._id)}
+                          onClick={() => handleOpenCheckinDialog(booking)}
                         >
                           Check-in
                         </Button>
                       )}
-                      {booking.status === "Đang sử dụng" && (
+                      {booking.status === "Đã xác nhận" && (
                         <Button
                           size="small"
                           color="primary"
                           variant="contained"
-                          onClick={() => handleOpenDialog(booking)}
+                          onClick={() => handleOpenCheckoutDialog(booking)}
                         >
                           Check-out
                         </Button>
@@ -175,8 +221,85 @@ export default function CheckinCheckout() {
           </Box>
         )}
 
+        {/* Dialog chọn dịch vụ ngoài khi check-in */}
+        <Dialog
+          open={openCheckinDialog}
+          onClose={() => setOpenCheckinDialog(false)}
+        >
+          <DialogTitle>Check-in & chọn dịch vụ ngoài</DialogTitle>
+          <DialogContent
+            sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}
+          >
+            <Typography variant="subtitle1">
+              Chọn dịch vụ ngoài sử dụng:
+            </Typography>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell />
+                  <TableCell>Tên dịch vụ</TableCell>
+                  <TableCell>Giá (VND)</TableCell>
+                  <TableCell>Số lượng</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {services.map((service) => {
+                  const checked = selectedServices.some(
+                    (s) => s.id === service.id
+                  );
+                  const quantity =
+                    selectedServices.find((s) => s.id === service.id)
+                      ?.quantity || 1;
+                  return (
+                    <TableRow key={service.id}>
+                      <TableCell>
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={(e) =>
+                            handleServiceCheck(service, e.target.checked)
+                          }
+                        />
+                      </TableCell>
+                      <TableCell>{service.name}</TableCell>
+                      <TableCell>
+                        {service.price.toLocaleString("vi-VN")}
+                      </TableCell>
+                      <TableCell>
+                        <TextField
+                          type="number"
+                          value={quantity}
+                          onChange={(e) =>
+                            handleServiceQuantityChange(
+                              service.id,
+                              parseInt(e.target.value)
+                            )
+                          }
+                          InputProps={{ inputProps: { min: 1 } }}
+                          size="small"
+                          disabled={!checked}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+            <Typography variant="subtitle1">
+              Tổng dịch vụ ngoài:{" "}
+              {getTotalServicesFee().toLocaleString("vi-VN")} VND
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenCheckinDialog(false)}>Hủy</Button>
+            <Button onClick={handleCheckin} variant="contained">
+              Xác nhận check-in
+            </Button>
+          </DialogActions>
+        </Dialog>
+
         {/* Dialog nhập phí phát sinh khi check-out */}
-        <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <Dialog open={openCheckoutDialog} onClose={handleCloseCheckoutDialog}>
           <DialogTitle>Check-out & dịch vụ phát sinh</DialogTitle>
           <DialogContent
             sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}
@@ -190,7 +313,7 @@ export default function CheckinCheckout() {
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCloseDialog}>Hủy</Button>
+            <Button onClick={handleCloseCheckoutDialog}>Hủy</Button>
             <Button onClick={handleCheckout} variant="contained">
               Xác nhận check-out
             </Button>
