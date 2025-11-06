@@ -1,4 +1,4 @@
-const db = require("../db"); // Kết nối mysql2/promise
+const db = require("../../db"); // Kết nối mysql2/promise
 
 // Giả sử đã cấu hình middleware xác thực JWT, gán user info vào req.user
 

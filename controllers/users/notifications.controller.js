@@ -1,4 +1,4 @@
-const db = require("../db");
+const db = require("../../db");
 
 // Lấy danh sách thông báo của user (giả sử có user.id từ xác thực)
 exports.getNotifications = async (req, res) => {
