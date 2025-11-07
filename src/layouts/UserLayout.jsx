@@ -3,12 +3,8 @@ import { Box, Container, Toolbar } from "@mui/material";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 
-/**
- * Layout chuẩn cho các trang user (khách hàng) quản lý sân bóng.
- * - Hiển thị Header ở trên cùng, Sidebar (menu) bên trái, phần nội dung động ở giữa.
- * - Có thể truyền menu sidebar riêng cho từng vai trò, hoặc dùng mặc định user.
- * - Tái sử dụng cho mọi trang user: Home, Booking, Notifications, History...
- */
+const drawerWidth = 88; // phải trùng với Sidebar
+
 export default function UserLayout({
   children,
   showSidebar = true,
@@ -19,10 +15,31 @@ export default function UserLayout({
       <Header />
       <Box sx={{ display: "flex", bgcolor: "#f6f7f9", minHeight: "100vh" }}>
         {showSidebar && <Sidebar menuItems={sidebarMenu} />}
-        <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
-          {/* Đảm bảo Header không che mất khách hàng */}
-          <Toolbar />
-          <Container maxWidth="lg" sx={{ py: 4, flex: 1 }}>
+        <Box
+          sx={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            ml: showSidebar ? `${drawerWidth}px` : 0,
+            minHeight: "100vh",
+            bgcolor: "#f6f7f9",
+          }}
+        >
+          {/* Để header không che phần nội dung */}
+          <Toolbar sx={{ minHeight: 64 }} />
+          <Container
+            maxWidth="lg"
+            disableGutters
+            sx={{
+              px: { xs: 2, md: 5 },
+              py: 4,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-start",
+              minHeight: "80vh",
+              margin: "0 auto",
+            }}
+          >
             {children}
           </Container>
         </Box>

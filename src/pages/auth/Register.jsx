@@ -1,20 +1,21 @@
 import React, { useState } from "react";
 import {
-  Container,
+  Box,
+  Paper,
   Typography,
   TextField,
   Button,
-  Box,
   Alert,
   CircularProgress,
   IconButton,
   InputAdornment,
+  Container,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import Header from "../../components/Header";
 import axiosClient from "../../api/axiosClient";
 import useAuth from "../../context/useAuth";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -23,6 +24,7 @@ export default function Register() {
     phone: "",
     password: "",
     confirm: "",
+    // Thêm các trường khác ở đây nếu muốn (ví dụ: address, gender...)
   });
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -66,8 +68,9 @@ export default function Register() {
         email: form.email,
         phone: form.phone,
         password: form.password,
+        // Thêm trường khác như address: form.address nếu có
       });
-      setUser(res.data); // Lưu user/toàn cục
+      setUser(res.data);
       localStorage.setItem("user", JSON.stringify(res.data));
       setSuccess("Đăng ký thành công! Đang chuyển trang...");
       setTimeout(() => navigate("/"), 1200);
@@ -81,53 +84,66 @@ export default function Register() {
   };
 
   return (
-    <>
-      <Header />
-      <Container maxWidth="xs" sx={{ mt: 5 }}>
-        <Box
-          component="form"
-          onSubmit={handleSubmit}
-          sx={{
-            p: 3,
-            bgcolor: "#fff",
-            borderRadius: 2,
-            boxShadow: 2,
-            display: "flex",
-            flexDirection: "column",
-            gap: 2,
-          }}
-        >
-          <Typography variant="h5" align="center" mb={2}>
-            Đăng ký tài khoản mới
-          </Typography>
+    <Box
+      sx={{
+        minHeight: "100vh",
+        bgcolor: "#f4f6fa",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <Paper elevation={3} sx={{ width: 400, p: 4 }}>
+        <Box textAlign="center" mb={2}>
+          <img
+            alt="Logo"
+            src="/logo192.png"
+            style={{ width: 48, height: 48 }}
+          />
+        </Box>
+        <Typography variant="h5" fontWeight="bold" align="center" mb={1}>
+          Create Your Account
+        </Typography>
+        <Typography color="text.secondary" textAlign="center" mb={3}>
+          Sign up with your email and password
+        </Typography>
+        <form onSubmit={handleSubmit}>
           <TextField
             label="Họ tên"
             name="name"
+            fullWidth
             value={form.name}
             onChange={handleChange}
+            sx={{ mb: 2 }}
             required
           />
           <TextField
             label="Số điện thoại"
             name="phone"
+            fullWidth
             value={form.phone}
             onChange={handleChange}
+            sx={{ mb: 2 }}
             required
           />
           <TextField
             label="Email"
             name="email"
+            fullWidth
             value={form.email}
             onChange={handleChange}
+            sx={{ mb: 2 }}
             required
-            //type="email"
+            // type="email"
           />
           <TextField
             label="Mật khẩu"
             name="password"
+            fullWidth
             type={showPw ? "text" : "password"}
             value={form.password}
             onChange={handleChange}
+            sx={{ mb: 2 }}
             required
             InputProps={{
               endAdornment: (
@@ -145,24 +161,40 @@ export default function Register() {
           <TextField
             label="Nhập lại mật khẩu"
             name="confirm"
+            fullWidth
             type={showPw ? "text" : "password"}
             value={form.confirm}
             onChange={handleChange}
+            sx={{ mb: 2 }}
             required
           />
-          {error && <Alert severity="error">{error}</Alert>}
-          {success && <Alert severity="success">{success}</Alert>}
+          {/* Thêm trường khác bên dưới (nếu cần) */}
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+          {success && (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              {success}
+            </Alert>
+          )}
           <Button
             type="submit"
             variant="contained"
             color="primary"
             disabled={loading}
             size="large"
+            fullWidth
+            sx={{ mb: 2, bgcolor: "#6a47ca" }}
           >
-            {loading ? <CircularProgress size={26} /> : "Đăng ký"}
+            {loading ? <CircularProgress size={26} /> : "Register"}
           </Button>
-        </Box>
-      </Container>
-    </>
+        </form>
+        <Typography textAlign="center" fontSize={14}>
+          Already have an account? <Link to="/">Sign In</Link>
+        </Typography>
+      </Paper>
+    </Box>
   );
 }

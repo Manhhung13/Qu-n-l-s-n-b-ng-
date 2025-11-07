@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import demoFieldImage from "../../assets/san-bong-mini.jpg";
-
 import {
   Grid,
   Box,
@@ -19,10 +18,16 @@ import {
   Select,
   CircularProgress,
   Alert,
+  Dialog,
+  DialogContent,
+  IconButton,
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import SearchIcon from "@mui/icons-material/Search";
 import axiosClient from "../../api/axiosClient";
 import UserLayout from "../../layouts/UserLayout";
+import BookingForm from "./BookingForm"; // Sửa lại đúng path nếu khác
+
 const fieldTypes = [
   { value: "", label: "Tất cả" },
   { value: "5vs5", label: "5 người" },
@@ -30,43 +35,87 @@ const fieldTypes = [
   { value: "11vs11", label: "11 người" },
 ];
 
-const statusColors = {
-  Trống: "success",
-  "Đã đặt": "warning",
-};
+function generateTimeSlots(start = "05:00", end = "23:30") {
+  const slots = [];
+  let [h, m] = start.split(":").map(Number);
+  const [endH, endM] = end.split(":").map(Number);
+  while (h < endH || (h === endH && m <= endM)) {
+    slots.push(
+      `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`
+    );
+    m += 30;
+    if (m === 60) {
+      h += 1;
+      m = 0;
+    }
+  }
+  return slots;
+}
+const slotOptions = generateTimeSlots();
 
 export default function Home() {
   const [fields, setFields] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  // State cho filter/tìm kiếm
   const [search, setSearch] = useState("");
   const [type, setType] = useState("");
-  const [status, setStatus] = useState("");
-  const [price, setPrice] = useState("");
 
-  // Gọi API lấy danh sách sân
+  const [price, setPrice] = useState("");
+  const [date, setDate] = useState("");
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
+  const [timeError, setTimeError] = useState("");
+  const [openBooking, setOpenBooking] = useState(false);
+  const [bookingInfo, setBookingInfo] = useState(null);
+
   useEffect(() => {
+    if (startTime && endTime && startTime >= endTime) {
+      setTimeError(
+        "Khung giờ không hợp lệ: Giờ bắt đầu phải trước giờ kết thúc."
+      );
+    } else setTimeError("");
+  }, [startTime, endTime]);
+
+  useEffect(() => {
+    if (startTime && endTime && startTime >= endTime) return;
     const fetchFields = async () => {
       setLoading(true);
       setError("");
       try {
-        // Nhận filter gửi lên backend nếu có API hỗ trợ
         const params = {};
         if (type) params.type = type;
         if (status) params.status = status;
         if (price) params.price = price;
         if (search) params.q = search;
+        if (date) params.date = date;
+        if (startTime) params.start_time = startTime;
+        if (endTime) params.end_time = endTime;
         const res = await axiosClient.get("/fields", { params });
         setFields(res.data);
       } catch {
-        setError("Không thể tải danh sách sân!");
+        setError("Vui lòng nhập date, start_time và end_time để chọn sân!");
       }
       setLoading(false);
     };
-
     fetchFields();
-  }, [search, type, status, price]);
+  }, [search, type, price, date, startTime, endTime]);
+
+  const displayedFields = fields;
+
+  // Sửa đoạn này: truyền đúng props bookingInfo cho dialog
+  const handleOpenBooking = (field) => {
+    setBookingInfo({
+      field_id: field.id,
+      field_name: field.name,
+      location: field.location,
+      type: field.type,
+      price: field.price,
+      date: date,
+      start_time: startTime,
+      end_time: endTime,
+    });
+    setOpenBooking(true);
+  };
 
   return (
     <UserLayout>
@@ -74,7 +123,6 @@ export default function Home() {
         <Typography variant="h4" mb={3}>
           Tìm Sân Bóng
         </Typography>
-        {/* Thanh tìm kiếm */}
         <Stack
           direction={{ xs: "column", md: "row" }}
           spacing={2}
@@ -93,9 +141,9 @@ export default function Home() {
                 </InputAdornment>
               ),
             }}
-            sx={{ minWidth: 260 }}
+            sx={{ minWidth: 240 }}
           />
-          <FormControl sx={{ minWidth: 130 }}>
+          <FormControl sx={{ minWidth: 120 }}>
             <InputLabel>Loại sân</InputLabel>
             <Select
               value={type}
@@ -109,19 +157,7 @@ export default function Home() {
               ))}
             </Select>
           </FormControl>
-          <FormControl sx={{ minWidth: 130 }}>
-            <InputLabel>Trạng thái</InputLabel>
-            <Select
-              value={status}
-              label="Trạng thái"
-              onChange={(e) => setStatus(e.target.value)}
-            >
-              <MenuItem value="">Tất cả</MenuItem>
-              <MenuItem value="Trống">Trống</MenuItem>
-              <MenuItem value="Đã đặt">Đã đặt</MenuItem>
-            </Select>
-          </FormControl>
-          <FormControl sx={{ minWidth: 130 }}>
+          <FormControl sx={{ minWidth: 120 }}>
             <InputLabel>Giá</InputLabel>
             <Select
               value={price}
@@ -134,9 +170,72 @@ export default function Home() {
               <MenuItem value="3">Trên 500.000đ</MenuItem>
             </Select>
           </FormControl>
+          <TextField
+            label="Ngày"
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+            sx={{ minWidth: 130 }}
+          />
+          <FormControl sx={{ minWidth: 120 }}>
+            <InputLabel>Giờ bắt đầu</InputLabel>
+            <Select
+              value={startTime}
+              label="Giờ bắt đầu"
+              onChange={(e) => setStartTime(e.target.value)}
+            >
+              {slotOptions.map((slot) => (
+                <MenuItem key={slot} value={slot}>
+                  {slot}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl sx={{ minWidth: 120 }}>
+            <InputLabel>Giờ kết thúc</InputLabel>
+            <Select
+              value={endTime}
+              label="Giờ kết thúc"
+              onChange={(e) => setEndTime(e.target.value)}
+            >
+              {slotOptions.map((slot) => (
+                <MenuItem key={slot} value={slot}>
+                  {slot}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </Stack>
+        {timeError && (
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            {timeError}
+          </Alert>
+        )}
 
-        {/* Nội dung */}
+        <Dialog
+          open={openBooking}
+          onClose={() => setOpenBooking(false)}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogContent sx={{ position: "relative", pt: 2 }}>
+            <IconButton
+              aria-label="close"
+              onClick={() => setOpenBooking(false)}
+              sx={{ position: "absolute", right: 8, top: 8, zIndex: 10 }}
+            >
+              <CloseIcon />
+            </IconButton>
+            {bookingInfo && (
+              <BookingForm
+                bookingInfo={bookingInfo}
+                onClose={() => setOpenBooking(false)}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+
         {loading ? (
           <Box mt={6} textAlign="center">
             <CircularProgress />
@@ -145,10 +244,9 @@ export default function Home() {
           <Alert severity="error">{error}</Alert>
         ) : (
           <Grid container spacing={3}>
-            {fields.map((field) => (
-              <Grid item xs={12} sm={6} md={4} key={field._id}>
+            {displayedFields.map((field) => (
+              <Grid item xs={12} sm={6} md={4} key={field.id}>
                 <Card>
-                  {/* Ảnh demo hoặc lấy từ backend */}
                   <CardMedia
                     component="img"
                     height="150"
@@ -164,8 +262,12 @@ export default function Home() {
                     </Typography>
                     <Box mt={1} mb={1}>
                       <Chip
-                        label={field.status}
-                        color={statusColors[field.status] || "default"}
+                        label={
+                          field.booked
+                            ? `Đã đặt: ${field.booked}`
+                            : "Trống khung giờ này"
+                        }
+                        color={field.booked ? "warning" : "success"}
                         size="small"
                         sx={{ mr: 1 }}
                       />
@@ -175,14 +277,14 @@ export default function Home() {
                       variant="subtitle1"
                       sx={{ mb: 1, fontWeight: "bold" }}
                     >
-                      {field.price?.toLocaleString("vi-VN")}đ / trận
+                      {field.price?.toLocaleString("vi-VN")}đ / trận/90 phút
                     </Typography>
                     <Button
                       fullWidth
                       variant="contained"
                       color="primary"
-                      disabled={field.status !== "Trống"}
-                      href={`/booking?field=${field._id}`}
+                      disabled={Boolean(field.booked)}
+                      onClick={() => handleOpenBooking(field)}
                     >
                       Đặt sân
                     </Button>

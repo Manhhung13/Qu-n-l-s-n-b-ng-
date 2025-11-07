@@ -6,7 +6,7 @@ import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 
 // User pages
-import Booking from "../pages/user/Booking";
+
 import History from "../pages/user/History";
 import Notifications from "../pages/user/Notifications";
 // ĐÃ BỎ: import UserDashboard from "../pages/user/Dashboard";
@@ -32,6 +32,7 @@ export default function AppRouter() {
     <BrowserRouter>
       <Routes>
         {/* Auth routes */}
+
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
@@ -47,16 +48,7 @@ export default function AppRouter() {
             </PrivateRoute>
           }
         />
-        <Route
-          path="/booking"
-          element={
-            <PrivateRoute>
-              <UserLayout>
-                <Booking />
-              </UserLayout>
-            </PrivateRoute>
-          }
-        />
+
         <Route
           path="/history"
           element={

@@ -30,15 +30,16 @@ export default function CheckinCheckout() {
   const [openCheckinDialog, setOpenCheckinDialog] = useState(false);
   const [checkinBookingId, setCheckinBookingId] = useState(null);
 
-  const [services, setServices] = useState([]);
-  const [selectedServices, setSelectedServices] = useState([]);
-  const getTotalServicesFee = () =>
-    selectedServices.reduce((sum, s) => sum + s.price * s.quantity, 0);
-
   // Check-out dialog states
   const [openCheckoutDialog, setOpenCheckoutDialog] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [extraFee, setExtraFee] = useState("");
+
+  // Dịch vụ ngoài cho check-out
+  const [services, setServices] = useState([]);
+  const [selectedServices, setSelectedServices] = useState([]);
+  const getTotalServicesFee = () =>
+    selectedServices.reduce((sum, s) => sum + s.price * s.quantity, 0);
 
   // Fetch bookings
   const fetchBookings = async () => {
@@ -59,18 +60,41 @@ export default function CheckinCheckout() {
   }, []);
 
   // ----- CHECK-IN HANDLING -----
-  // Mở Dialog check-in & load services từ backend
-  const handleOpenCheckinDialog = async (booking) => {
+  const handleOpenCheckinDialog = (booking) => {
     setCheckinBookingId(booking.id);
-    try {
-      const res = await axiosClient.get("/services");
-      setServices(res.data);
-      setSelectedServices([]);
-    } catch {}
     setOpenCheckinDialog(true);
   };
+  const handleCheckin = async () => {
+    try {
+      await axiosClient.put(`/manager/checkin/${checkinBookingId}`);
+      await fetchBookings();
+      setOpenCheckinDialog(false);
+      setCheckinBookingId(null);
+    } catch {
+      setError("Không thể xác nhận!");
+    }
+  };
 
-  // Chọn dịch vụ ngoài và số lượng
+  // ----- CHECK-OUT HANDLING -----
+  const handleOpenCheckoutDialog = async (booking) => {
+    setSelectedBooking(booking);
+    setExtraFee(booking.extraFee || "");
+    try {
+      const res = await axiosClient.get("/manager/services");
+      setServices(res.data);
+      setSelectedServices([]);
+    } catch (error) {
+      console.error("Lỗi khi tải danh sách dịch vụ:", error);
+      setError("Không thể tải danh sách dịch vụ.");
+      setServices([]);
+    }
+    setOpenCheckoutDialog(true);
+  };
+  const handleCloseCheckoutDialog = () => {
+    setOpenCheckoutDialog(false);
+    setSelectedBooking(null);
+    setSelectedServices([]);
+  };
   const handleServiceCheck = (service, checked) => {
     if (checked) {
       setSelectedServices((prev) => [...prev, { ...service, quantity: 1 }]);
@@ -85,39 +109,15 @@ export default function CheckinCheckout() {
       )
     );
   };
-
-  // Submit check-in (gửi dịch vụ ngoài lên backend)
-  const handleCheckin = async () => {
+  const handleCheckout = async () => {
     try {
-      await axiosClient.put(`/manager/checkin/${checkinBookingId}`, {
+      await axiosClient.put(`/manager/checkout/${selectedBooking.id}`, {
+        extraFee: extraFee ? parseInt(extraFee) : 0,
         services: selectedServices.map((s) => ({
           serviceId: s.id,
           quantity: s.quantity,
         })),
         totalServicesFee: getTotalServicesFee(),
-      });
-      await fetchBookings();
-      setOpenCheckinDialog(false);
-      setCheckinBookingId(null);
-    } catch {
-      setError("Không thể xác nhận!");
-    }
-  };
-
-  // ----- CHECK-OUT HANDLING -----
-  const handleOpenCheckoutDialog = (booking) => {
-    setSelectedBooking(booking);
-    setExtraFee(booking.extraFee || "");
-    setOpenCheckoutDialog(true);
-  };
-  const handleCloseCheckoutDialog = () => {
-    setOpenCheckoutDialog(false);
-    setSelectedBooking(null);
-  };
-  const handleCheckout = async () => {
-    try {
-      await axiosClient.put(`/manager/checkout/${selectedBooking.id}`, {
-        extraFee: extraFee ? parseInt(extraFee) : 0,
       });
       await fetchBookings();
       handleCloseCheckoutDialog();
@@ -221,12 +221,23 @@ export default function CheckinCheckout() {
           </Box>
         )}
 
-        {/* Dialog chọn dịch vụ ngoài khi check-in */}
+        {/* Dialog đơn giản cho check-in */}
         <Dialog
           open={openCheckinDialog}
           onClose={() => setOpenCheckinDialog(false)}
         >
-          <DialogTitle>Check-in & chọn dịch vụ ngoài</DialogTitle>
+          <DialogTitle>Check-in xác nhận sân</DialogTitle>
+          <DialogActions>
+            <Button onClick={() => setOpenCheckinDialog(false)}>Hủy</Button>
+            <Button onClick={handleCheckin} variant="contained">
+              Xác nhận check-in
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Dialog chọn dịch vụ ngoài khi check-out */}
+        <Dialog open={openCheckoutDialog} onClose={handleCloseCheckoutDialog}>
+          <DialogTitle>Check-out & chọn dịch vụ ngoài</DialogTitle>
           <DialogContent
             sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}
           >
@@ -289,27 +300,13 @@ export default function CheckinCheckout() {
               Tổng dịch vụ ngoài:{" "}
               {getTotalServicesFee().toLocaleString("vi-VN")} VND
             </Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setOpenCheckinDialog(false)}>Hủy</Button>
-            <Button onClick={handleCheckin} variant="contained">
-              Xác nhận check-in
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        {/* Dialog nhập phí phát sinh khi check-out */}
-        <Dialog open={openCheckoutDialog} onClose={handleCloseCheckoutDialog}>
-          <DialogTitle>Check-out & dịch vụ phát sinh</DialogTitle>
-          <DialogContent
-            sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}
-          >
             <TextField
               label="Chi phí phát sinh (VND)"
               type="number"
               value={extraFee}
               onChange={(e) => setExtraFee(e.target.value)}
               InputProps={{ inputProps: { min: 0 } }}
+              sx={{ mt: 2 }}
             />
           </DialogContent>
           <DialogActions>

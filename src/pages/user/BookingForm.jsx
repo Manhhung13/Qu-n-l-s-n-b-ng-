@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import axiosClient from "../../api/axiosClient";
 import {
   Box,
   Typography,
@@ -7,41 +8,19 @@ import {
   Alert,
   Paper,
 } from "@mui/material";
-import { useSearchParams } from "react-router-dom";
-import axiosClient from "../../api/axiosClient";
 
-export default function BookingForm() {
-  const [searchParams] = useSearchParams();
+// bookingInfo và onClose nhận từ Home
+export default function BookingForm({ bookingInfo, onClose }) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [note, setNote] = useState("");
-  const [address, setAddress] = useState(""); // địa chỉ sân
-  const [fieldName, setFieldName] = useState(""); // tên sân
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const field = searchParams.get("field");
-  const date = searchParams.get("date");
-  const start_time = searchParams.get("start_time");
-  const end_time = searchParams.get("end_time");
-
-  useEffect(() => {
-    // Gọi API lấy thông tin chi tiết sân theo id
-    async function fetchField() {
-      if (field) {
-        try {
-          const res = await axiosClient.get(`/fields/${field}`);
-          setAddress(res.data.location || "");
-          setFieldName(res.data.name || "");
-        } catch {
-          setAddress("");
-        }
-      }
-    }
-    fetchField();
-  }, [field]);
+  // Nếu bookingInfo chưa sẵn sàng thì không render gì cả
+  if (!bookingInfo) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -53,8 +32,16 @@ export default function BookingForm() {
     }
     setSubmitting(true);
     try {
-      // Gọi API booking thật ở đây
-      // await axiosClient.post("/booking", { field, date, start_time, end_time, name, phone, email, note });
+      await axiosClient.post("/bookings", {
+        field_id: bookingInfo.field_id,
+        date: bookingInfo.date,
+        start_time: bookingInfo.start_time,
+        end_time: bookingInfo.end_time,
+        name,
+        phone,
+        email,
+        note,
+      });
       setSuccess("Đặt sân thành công!");
     } catch {
       setError("Đặt sân thất bại, vui lòng thử lại!");
@@ -63,20 +50,20 @@ export default function BookingForm() {
   };
 
   return (
-    <Box maxWidth={480} mx="auto" mt={6} component={Paper} p={4}>
+    <Box maxWidth={480} mx="auto" mt={2} component={Paper} p={3}>
       <Typography variant="h5" mb={2}>
         Nhập Thông Tin Đặt Sân
       </Typography>
       <Typography mb={2}>
-        Sân: <b>{fieldName}</b>
+        Sân: <b>{bookingInfo.field_name}</b>
         <br />
-        Địa chỉ sân: <b>{address}</b>
+        Địa chỉ: <b>{bookingInfo.location}</b>
         <br />
-        Ngày: <b>{date}</b>
+        Ngày: <b>{bookingInfo.date}</b>
         <br />
         Giờ:{" "}
         <b>
-          {start_time} - {end_time}
+          {bookingInfo.start_time} - {bookingInfo.end_time}
         </b>
       </Typography>
       <form onSubmit={handleSubmit}>

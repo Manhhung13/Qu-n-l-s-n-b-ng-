@@ -1,22 +1,22 @@
 import React, { useState } from "react";
 import {
-  Container,
+  Box,
+  Paper,
   Typography,
   TextField,
   Button,
-  Box,
+  Checkbox,
+  FormControlLabel,
   Alert,
   CircularProgress,
   IconButton,
   InputAdornment,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import Header from "../../components/Header";
 import axiosClient from "../../api/axiosClient";
-import useAuth from "../../context/useAuth"; // hoặc nơi bạn lưu AuthContext
+import useAuth from "../../context/useAuth";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
-
 export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
@@ -24,6 +24,7 @@ export default function Login() {
   const [error, setError] = useState("");
   const { setUser } = useAuth();
   const navigate = useNavigate();
+  const [keepLogin, setKeepLogin] = useState(true);
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -34,14 +35,18 @@ export default function Login() {
     setError("");
     try {
       const res = await axiosClient.post("/users/login", form);
-      setUser(res.data); // Lưu user/token toàn cục
-      localStorage.setItem("user", JSON.stringify(res.data)); // lưu phiên
-      if (res.data.user.role === "admin") {
-        navigate("/admin/reports"); // chuyển đến trang admin
-      } else if (res.data.user.role === "manager") {
-        navigate("/manager/dashboard"); // chuyển đến trang manager
+      setUser(res.data); // Cập nhật context app
+      if (keepLogin) {
+        localStorage.setItem("user", JSON.stringify(res.data));
+      }
+      // Kiểm tra role và điều hướng
+      const role = res.data?.user?.role;
+      if (role === "admin") {
+        navigate("/admin/reports");
+      } else if (role === "manager") {
+        navigate("/manager/dashboard");
       } else {
-        navigate("/home"); // role khác chuyển về home
+        navigate("/home");
       }
     } catch (err) {
       setError(
@@ -53,39 +58,52 @@ export default function Login() {
   };
 
   return (
-    <>
-      <Header />
-      <Container maxWidth="xs" sx={{ mt: 8 }}>
-        <Box
-          component="form"
-          onSubmit={handleSubmit}
-          sx={{
-            p: 3,
-            bgcolor: "#fff",
-            borderRadius: 2,
-            boxShadow: 2,
-            display: "flex",
-            flexDirection: "column",
-            gap: 2,
-          }}
-        >
-          <Typography variant="h5" align="center" mb={2}>
-            Đăng nhập hệ thống
-          </Typography>
+    <Box
+      sx={{
+        minHeight: "100vh",
+        bgcolor: "#f4f6fa",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <Paper elevation={3} sx={{ width: 380, p: 4 }}>
+        <Box textAlign="center" mb={2}>
+          <img
+            alt="Logo"
+            src="/logo192.png"
+            style={{ width: 48, height: 48 }}
+          />
+        </Box>
+        <Typography variant="h5" fontWeight="bold" textAlign="center" mb={1}>
+          Hi, Welcome Back
+        </Typography>
+        <Typography color="text.secondary" textAlign="center" mb={3}>
+          Enter your credentials to continue
+        </Typography>
+        <form onSubmit={handleSubmit}>
           <TextField
-            label="Username or Email"
+            label="Email Address / Username"
             name="email"
+            fullWidth
+            size="small"
             value={form.email}
             onChange={handleChange}
+            sx={{ mb: 2 }}
+            autoComplete="username"
             required
           />
           <TextField
-            label="Mật khẩu"
+            label="Password"
             name="password"
+            fullWidth
+            size="small"
             type={showPw ? "text" : "password"}
             value={form.password}
             onChange={handleChange}
+            sx={{ mb: 2 }}
             required
+            autoComplete="current-password"
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -99,23 +117,45 @@ export default function Login() {
               ),
             }}
           />
-          {error && <Alert severity="error">{error}</Alert>}
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            disabled={loading}
-            size="large"
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="space-between"
+            mb={2}
           >
-            {loading ? <CircularProgress size={26} /> : "Đăng nhập"}
-          </Button>
-          <Box sx={{ mt: 2, textAlign: "center" }}>
-            <Typography variant="body2">
-              Chưa có tài khoản? <Link to="/register">Đăng ký</Link>
-            </Typography>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={keepLogin}
+                  onChange={(e) => setKeepLogin(e.target.checked)}
+                />
+              }
+              label="Keep me logged in"
+            />
+            <Link href="#" underline="hover" fontSize={14}>
+              Forgot Password?
+            </Link>
           </Box>
-        </Box>
-      </Container>
-    </>
+          {error && (
+            <Alert severity="error" sx={{ mb: 1 }}>
+              {error}
+            </Alert>
+          )}
+          <Button
+            variant="contained"
+            fullWidth
+            size="large"
+            type="submit"
+            sx={{ mb: 2, bgcolor: "#6a47ca" }}
+            disabled={loading}
+          >
+            {loading ? <CircularProgress size={24} /> : "Sign In"}
+          </Button>
+        </form>
+        <Typography textAlign="center" fontSize={14}>
+          Don't have an account? <Link to="/register">Register</Link>
+        </Typography>
+      </Paper>
+    </Box>
   );
 }
