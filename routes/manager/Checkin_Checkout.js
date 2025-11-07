@@ -4,4 +4,5 @@ const checkin_Checkout_Controller = require("../../controllers/manager/Checkin_C
 router.get("/list_bookings", checkin_Checkout_Controller.getBookingsByDate);
 router.put("/checkin/:id", checkin_Checkout_Controller.checkinBooking);
 router.put("/checkout/:id", checkin_Checkout_Controller.checkoutBooking);
+router.get("/list_service", checkin_Checkout_Controller.getAllServices);
 module.exports = router;

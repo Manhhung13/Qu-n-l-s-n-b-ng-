@@ -4,7 +4,7 @@ const tk_email = process.env.tk_email;
 const mk_email = process.env.mk_email;
 exports.checkinBooking = async (req, res) => {
   const bookingId = req.params.id;
-  const { services, totalServicesFee } = req.body;
+  const { services = [], totalServicesFee = 0 } = req.body || {};
   try {
     // Cập nhật trạng thái booking
     const updateBookingSQL = `
@@ -59,18 +59,20 @@ exports.checkinBooking = async (req, res) => {
       "INSERT INTO notifications (user_id, content, type, is_read, created_at, status) VALUES (?, ?, ?, 0, NOW(), ?)",
       [booking.user_id, notificationContent, "xac nhan", "chưa xác nhận"]
     );
+    console.log("MAIL_USER:", process.env.tk_email);
+    console.log("MAIL_PASS:", process.env.mk_email);
 
     // 5. Gửi email cho user
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: "tk_email",
-        pass: "mk_email",
+        user: tk_email,
+        pass: mk_email,
       },
     });
 
     const mailOptions = {
-      from: "tk_email",
+      from: tk_email,
       to: booking.email,
       subject: "Xác nhận đặt sân thành công",
       html: `
@@ -150,5 +152,16 @@ exports.getBookingsByDate = async (req, res) => {
   } catch (error) {
     console.error("Lỗi lấy danh sách booking:", error);
     res.status(500).json({ message: "Lỗi server khi lấy booking" });
+  }
+};
+exports.getAllServices = async (req, res) => {
+  try {
+    const [rows] = await db.execute("SELECT id, name, price FROM services");
+    res.json(rows);
+  } catch (error) {
+    console.error("Lỗi lấy danh sách dịch vụ ngoài:", error);
+    res
+      .status(500)
+      .json({ message: "Lỗi server khi lấy danh sách dịch vụ ngoài" });
   }
 };
