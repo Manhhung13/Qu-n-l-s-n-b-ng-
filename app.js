@@ -8,6 +8,8 @@ const bookingsRoutes = require("./routes/user/booking");
 const notificationsRoutes = require("./routes/user/notifications");
 const roleAuth = require("./middlewares/role");
 const manager_Checkin_Checkout = require("./routes/manager/Checkin_Checkout");
+const manager_Dashboard = require("./routes/manager/Dashboard");
+const updateFieldStatus = require("./routes/admin/update_field");
 const auth = require("./middlewares/auth");
 const app = express();
 app.use(cors());
@@ -16,11 +18,12 @@ app.use("/users", usersRoutes);
 app.use(auth);
 
 // Gắn các route
-
+app.use("/manager/dashboard", roleAuth("manager"), manager_Dashboard);
 app.use("/fields", roleAuth("user"), fieldsRoutes);
 app.use("/bookings", roleAuth("user"), bookingsRoutes);
 app.use("/notifications", roleAuth("user"), notificationsRoutes);
 app.use("/manager", roleAuth("manager"), manager_Checkin_Checkout);
+app.use("/admin/fields", roleAuth("admin"), updateFieldStatus);
 app.get("/", (req, res) => {
   res.send("Server API đang chạy!");
 });

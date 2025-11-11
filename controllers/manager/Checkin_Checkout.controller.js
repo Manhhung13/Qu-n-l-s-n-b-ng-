@@ -14,24 +14,6 @@ exports.checkinBooking = async (req, res) => {
     `;
     await db.execute(updateBookingSQL, [bookingId]);
 
-    // Lấy field_id liên quan đến booking
-    const [rows] = await db.execute(
-      `SELECT field_id FROM bookings WHERE id = ?`,
-      [bookingId]
-    );
-    if (rows.length === 0) {
-      return res.status(404).json({ message: "Booking không tồn tại" });
-    }
-    const fieldId = rows[0].field_id;
-
-    // Cập nhật trạng thái sân thành "Đã đặt"
-    const updateFieldSQL = `
-      UPDATE fields
-      SET status = 'Đã đặt'
-      WHERE id = ?
-    `;
-    await db.execute(updateFieldSQL, [fieldId]);
-
     // 2. Lưu các dịch vụ ngoài vào bảng booking_services (nếu có)
     if (Array.isArray(services) && services.length > 0) {
       for (const item of services) {
@@ -54,7 +36,30 @@ exports.checkinBooking = async (req, res) => {
     const booking = bookingRows[0];
 
     // 4. Gửi notification vào bảng notifications
-    const notificationContent = `Sân [${booking.fieldName}] đã được xác nhận đặt thành công cho bạn.`;
+    function formatDateVN(isoDateStr) {
+      if (typeof isoDateStr !== "string") {
+        // Thử parse từ Date object, hoặc trả về giá trị mặc định
+        if (isoDateStr instanceof Date) {
+          const year = isoDateStr.getFullYear();
+          const month = String(isoDateStr.getMonth() + 1).padStart(2, "0");
+          const day = String(isoDateStr.getDate()).padStart(2, "0");
+          return `${day}/${month}/${year}`;
+        }
+        return ""; // hoặc throw error/cảnh báo
+      }
+      const [year, month, day] = isoDateStr.split("-");
+      return `${day}/${month}/${year}`;
+    }
+
+    // Dùng trong nội dung thông báo:
+    console.log("booking.date:", booking.date);
+    const dateString =
+      booking.date instanceof Date
+        ? booking.date.toISOString().slice(0, 10)
+        : String(booking.date);
+    const ngayVN = formatDateVN(dateString);
+    const notificationContent = `Bạn đã đặt thành công sân ${booking.fieldName} vào ngày ${ngayVN} khung giờ ${booking.start_time} - ${booking.end_time}`;
+
     await db.execute(
       "INSERT INTO notifications (user_id, content, type, is_read, created_at, status) VALUES (?, ?, ?, 0, NOW(), ?)",
       [booking.user_id, notificationContent, "xac nhan", "chưa xác nhận"]
@@ -111,24 +116,6 @@ exports.checkoutBooking = async (req, res) => {
     `;
     await db.execute(updateBookingSQL, [extraFee, bookingId]);
 
-    // Lấy field_id liên quan đến booking
-    const [rows] = await db.execute(
-      `SELECT field_id FROM bookings WHERE id = ?`,
-      [bookingId]
-    );
-    if (rows.length === 0) {
-      return res.status(404).json({ message: "Booking không tồn tại" });
-    }
-    const fieldId = rows[0].field_id;
-
-    // Cập nhật trạng thái sân thành "Trống"
-    const updateFieldSQL = `
-      UPDATE fields
-      SET status = 'Trống'
-      WHERE id = ?
-    `;
-    await db.execute(updateFieldSQL, [fieldId]);
-
     res.json({ message: "Check-out thành công" });
   } catch (error) {
     console.error("Lỗi check-out:", error);
@@ -139,6 +126,7 @@ exports.checkoutBooking = async (req, res) => {
 // Lấy danh sách booking của ngày (theo query ?date=YYYY-MM-DD)
 exports.getBookingsByDate = async (req, res) => {
   const dateFilter = req.query.date;
+  console.log("Date filter:", dateFilter);
   try {
     const sql = `
       SELECT b.*, f.name as fieldName, f.price as fieldPrice
