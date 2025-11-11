@@ -20,7 +20,7 @@ import CheckinCheckout from "../pages/manager/CheckinCheckout";
 // Admin pages
 import AdminReports from "../pages/admin/Reports";
 import ManageStaff from "../pages/admin/ManageStaff";
-import Pricing from "../pages/admin/Pricing";
+import Field from "../pages/admin/Fields";
 
 // Layouts
 import UserLayout from "../layouts/UserLayout";
@@ -134,11 +134,11 @@ export default function AppRouter() {
           }
         />
         <Route
-          path="/admin/pricing"
+          path="/admin/field"
           element={
             <PrivateRoute>
               <AdminLayout>
-                <Pricing />
+                <Field />
               </AdminLayout>
             </PrivateRoute>
           }

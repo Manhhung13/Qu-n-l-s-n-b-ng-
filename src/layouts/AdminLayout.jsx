@@ -1,27 +1,31 @@
 import React from "react";
-import { Box, Container, Toolbar } from "@mui/material";
+import { Box, Container, Toolbar, Paper } from "@mui/material";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
+import BarChartIcon from "@mui/icons-material/BarChart";
+import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
+import LocalOfferIcon from "@mui/icons-material/LocalOffer";
 
-// Menu đặc trưng cho admin
 const adminMenu = [
   {
     label: "Báo cáo",
     path: "/admin/reports",
-    icon: <i className="fa-solid fa-chart-bar" />,
+    icon: <BarChartIcon fontSize="large" />,
   },
   {
     label: "Quản lý nhân sự",
     path: "/admin/manage-staff",
-    icon: <i className="fa-solid fa-user-tie" />,
+    icon: <PeopleAltIcon fontSize="large" />,
   },
   {
     label: "Bảng giá",
-    path: "/admin/pricing",
-    icon: <i className="fa-solid fa-tags" />,
+    path: "/admin/field",
+    icon: <LocalOfferIcon fontSize="large" />,
   },
-  // Bổ sung các mục admin khác nếu có
+  // Có thể bổ sung mục khác cho admin ở đây
 ];
+
+const drawerWidth = 88; // Sidebar dạng mini
 
 export default function AdminLayout({
   children,
@@ -32,11 +36,51 @@ export default function AdminLayout({
     <>
       <Header />
       <Box sx={{ display: "flex", bgcolor: "#f5f7fa", minHeight: "100vh" }}>
-        {showSidebar && <Sidebar menuItems={sidebarMenu} />}
-        <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
-          <Toolbar />
-          <Container maxWidth="lg" sx={{ py: 4, flex: 1 }}>
-            {children}
+        {showSidebar && <Sidebar menuItems={sidebarMenu} mini />}
+        <Box
+          sx={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            ml: showSidebar ? `${drawerWidth}px` : 0,
+            minHeight: "100vh",
+            transition: "margin-left 0.3s",
+            bgcolor: "#f5f7fa",
+          }}
+        >
+          <Toolbar sx={{ minHeight: 64 }} />
+          <Container
+            maxWidth="lg"
+            disableGutters
+            sx={{
+              pt: 5,
+              pb: 4,
+              minHeight: "calc(100vh - 80px)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              position: "relative",
+            }}
+          >
+            <Paper
+              elevation={2}
+              sx={{
+                width: "100%",
+                maxWidth: 1200,
+                minHeight: 400,
+                px: { xs: 2, md: 6 },
+                py: 4,
+                bgcolor: "#fff",
+                borderRadius: 3,
+                boxShadow: "0 2px 10px rgba(30,60,90,0.06)",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                margin: "0 auto",
+              }}
+            >
+              {children}
+            </Paper>
           </Container>
         </Box>
       </Box>

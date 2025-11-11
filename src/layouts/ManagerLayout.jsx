@@ -1,39 +1,39 @@
 import React from "react";
-import { Box, Container, Toolbar } from "@mui/material";
+import { Box, Container, Toolbar, Paper } from "@mui/material";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 
-// Menu sidebar dành riêng cho chức năng manager
+// Icon material mẫu
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
+import PeopleIcon from "@mui/icons-material/People";
+import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
+
 const managerMenu = [
   {
     label: "Dashboard",
     path: "/manager/dashboard",
-    icon: <i className="fa-solid fa-chart-line" />,
+    icon: <DashboardIcon fontSize="large" />,
   },
   {
     label: "Sân bóng",
     path: "/manager/fields",
-    icon: <i className="fa-solid fa-futbol" />,
+    icon: <SportsSoccerIcon fontSize="large" />,
   },
   {
     label: "Khách hàng",
     path: "/manager/customers",
-    icon: <i className="fa-solid fa-users" />,
+    icon: <PeopleIcon fontSize="large" />,
   },
   {
     label: "Check-in/Check-out",
     path: "/manager/checkin-checkout",
-    icon: <i className="fa-solid fa-ticket-alt" />,
+    icon: <ConfirmationNumberIcon fontSize="large" />,
   },
-  // Có thể mở rộng thêm mục nếu cần
 ];
 
-/**
- * Layout chuẩn cho các trang manager (quản lý):
- * - Hiển thị Header trên cùng, Sidebar bên trái, nội dung động ở giữa
- * - Truyền prop children để dùng lại cho mọi page manager
- * - Dễ dàng mở rộng/thay đổi menu thích hợp từng vai trò (nếu cần)
- */
+const drawerWidth = 88; // Sidebar mini
+
 export default function ManagerLayout({
   children,
   showSidebar = true,
@@ -43,11 +43,51 @@ export default function ManagerLayout({
     <>
       <Header />
       <Box sx={{ display: "flex", bgcolor: "#f7f7fa", minHeight: "100vh" }}>
-        {showSidebar && <Sidebar menuItems={sidebarMenu} />}
-        <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
-          <Toolbar />
-          <Container maxWidth="lg" sx={{ py: 4, flex: 1 }}>
-            {children}
+        {showSidebar && <Sidebar menuItems={sidebarMenu} mini />}
+        <Box
+          sx={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            ml: showSidebar ? `${drawerWidth}px` : 0,
+            minHeight: "100vh",
+            transition: "margin-left 0.3s",
+            bgcolor: "#f7f7fa",
+          }}
+        >
+          <Toolbar sx={{ minHeight: 64 }} />
+          <Container
+            maxWidth="lg"
+            disableGutters
+            sx={{
+              pt: 5,
+              pb: 4,
+              minHeight: "calc(100vh - 80px)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              position: "relative",
+            }}
+          >
+            {/* Paper nổi bật cho vùng content */}
+            <Paper
+              elevation={2}
+              sx={{
+                width: "100%",
+                maxWidth: 960,
+                minHeight: 360,
+                px: 4,
+                py: 4,
+                bgcolor: "#fff",
+                borderRadius: 3,
+                boxShadow: "0 2px 10px rgba(30,60,90,0.06)",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
+            >
+              {children}
+            </Paper>
           </Container>
         </Box>
       </Box>

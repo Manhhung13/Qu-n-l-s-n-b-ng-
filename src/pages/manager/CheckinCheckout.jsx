@@ -46,7 +46,18 @@ export default function CheckinCheckout() {
     setLoading(true);
     setError("");
     try {
-      const today = new Date().toISOString().slice(0, 10);
+      function getVietnamDateYYYYMMDD() {
+        const now = new Date();
+        // Lấy ngày theo timezone Việt Nam
+        const vnDate = now.toLocaleDateString("en-CA", {
+          timeZone: "Asia/Ho_Chi_Minh",
+        });
+        return vnDate;
+      }
+
+      const today = getVietnamDateYYYYMMDD();
+      console.log(today);
+
       const res = await axiosClient.get(`/manager/list_bookings?date=${today}`);
       setBookings(res.data);
     } catch {
