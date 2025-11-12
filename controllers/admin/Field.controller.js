@@ -13,16 +13,19 @@ exports.getAllFields = async (req, res) => {
 // Thêm sân mới
 exports.createField = async (req, res) => {
   try {
-    const { name, type, location, price } = req.body;
+    const { name, type, location, image_url, price, status, description } =
+      req.body;
+    console.log("Creating field with data:", req.body);
     const [result] = await db.query(
-      "INSERT INTO fields (name, type, location, price) VALUES (?, ?, ?, ?)",
-      [name, type, location, price]
+      "INSERT INTO fields (name, type, location,image_url, price,status,description) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      [name, type, location, image_url, price, status, description]
     );
     const [fields] = await db.query("SELECT * FROM fields WHERE id = ?", [
       result.insertId,
     ]);
     res.status(201).json(fields[0]);
   } catch (err) {
+    console.error("SQL Error:", err);
     res.status(400).json({ error: "Thêm sân thất bại" });
   }
 };
@@ -31,9 +34,11 @@ exports.createField = async (req, res) => {
 exports.deleteField = async (req, res) => {
   try {
     const { id } = req.params;
+    console.log("Deleting field with id:", id);
     await db.query("DELETE FROM fields WHERE id = ?", [id]);
     res.json({ success: true });
   } catch (err) {
+    console.error("SQL Error:", err);
     res.status(400).json({ error: "Xóa sân thất bại" });
   }
 };

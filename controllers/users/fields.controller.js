@@ -35,14 +35,15 @@ exports.getFields = async (req, res) => {
     // Query tìm tất cả sân kèm trạng thái booked dựa trên ngày và khung giờ
     const sql = `
       SELECT f.*,
-       EXISTS (
+       (EXISTS (
          SELECT 1 FROM bookings b
          WHERE b.field_id = f.id
            AND b.date = ?
            AND b.start_time < TIME(?)
            AND b.end_time > TIME(?)
            AND b.status IN ('Đã đặt', 'Đã xác nhận')
-       ) AS booked
+  )
+           Or f.status <> 'sân hoạt động bình thường' ) AS booked
   FROM fields f
  WHERE f.name LIKE ?
    AND (? = '' OR f.type = ?)
