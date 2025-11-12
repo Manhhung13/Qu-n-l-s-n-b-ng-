@@ -26,7 +26,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import SearchIcon from "@mui/icons-material/Search";
 import axiosClient from "../../api/axiosClient";
 import UserLayout from "../../layouts/UserLayout";
-import BookingForm from "./BookingForm"; // Sửa lại đúng path nếu khác
+import BookingForm from "./BookingForm";
 
 const fieldTypes = [
   { value: "", label: "Tất cả" },
@@ -53,13 +53,22 @@ function generateTimeSlots(start = "05:00", end = "23:30") {
 }
 const slotOptions = generateTimeSlots();
 
+// Map trạng thái thành màu chip trực quan
+const statusColors = {
+  "sân hoạt động bình thường": "success",
+  "sân đang bảo trì": "warning",
+  "đã đặt": "primary",
+  "đang sử dụng": "default",
+};
+const defaultStatusColor = "default";
+
 export default function Home() {
   const [fields, setFields] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [type, setType] = useState("");
-
+  const [status, setStatus] = useState(""); // Add status filter if muốn filter theo trạng thái
   const [price, setPrice] = useState("");
   const [date, setDate] = useState("");
   const [startTime, setStartTime] = useState("");
@@ -91,18 +100,15 @@ export default function Home() {
         if (startTime) params.start_time = startTime;
         if (endTime) params.end_time = endTime;
         const res = await axiosClient.get("/fields", { params });
-        setFields(res.data);
+        setFields(res.data); // Nếu API trả về `fields: [...]` thì setFields(res.data.fields)
       } catch {
         setError("Vui lòng nhập date, start_time và end_time để chọn sân!");
       }
       setLoading(false);
     };
     fetchFields();
-  }, [search, type, price, date, startTime, endTime]);
+  }, [search, type, status, price, date, startTime, endTime]);
 
-  const displayedFields = fields;
-
-  // Sửa đoạn này: truyền đúng props bookingInfo cho dialog
   const handleOpenBooking = (field) => {
     setBookingInfo({
       field_id: field.id,
@@ -117,12 +123,14 @@ export default function Home() {
     setOpenBooking(true);
   };
 
+  // Giao diện phần Home
   return (
     <UserLayout>
       <Box sx={{ px: 2, py: 2 }}>
         <Typography variant="h4" mb={3}>
           Tìm Sân Bóng
         </Typography>
+        {/* Bộ lọc */}
         <Stack
           direction={{ xs: "column", md: "row" }}
           spacing={2}
@@ -170,6 +178,7 @@ export default function Home() {
               <MenuItem value="3">Trên 500.000đ</MenuItem>
             </Select>
           </FormControl>
+
           <TextField
             label="Ngày"
             type="date"
@@ -213,6 +222,7 @@ export default function Home() {
           </Alert>
         )}
 
+        {/* Popup booking */}
         <Dialog
           open={openBooking}
           onClose={() => setOpenBooking(false)}
@@ -236,6 +246,7 @@ export default function Home() {
           </DialogContent>
         </Dialog>
 
+        {/* Hiển thị danh sách sân bóng với trạng thái */}
         {loading ? (
           <Box mt={6} textAlign="center">
             <CircularProgress />
@@ -244,14 +255,14 @@ export default function Home() {
           <Alert severity="error">{error}</Alert>
         ) : (
           <Grid container spacing={3}>
-            {displayedFields.map((field) => (
+            {fields.map((field) => (
               <Grid item xs={12} sm={6} md={4} key={field.id}>
                 <Card>
                   <CardMedia
                     component="img"
                     height="150"
                     alt={field.name}
-                    image={demoFieldImage}
+                    image={field.image_url || demoFieldImage}
                   />
                   <CardContent>
                     <Typography variant="h6" noWrap>
@@ -261,17 +272,26 @@ export default function Home() {
                       {field.location}
                     </Typography>
                     <Box mt={1} mb={1}>
+                      {/* Trạng thái sân */}
                       <Chip
-                        label={
-                          field.booked
-                            ? `Đã đặt: ${field.booked}`
-                            : "Trống khung giờ này"
-                        }
-                        color={field.booked ? "warning" : "success"}
+                        label={field.status || "Không rõ trạng thái"}
+                        color={statusColors[field.status] || defaultStatusColor}
                         size="small"
                         sx={{ mr: 1 }}
                       />
                       <Chip label={field.type} color="info" size="small" />
+                      {field.status !== "sân đang bảo trì" && (
+                        <Chip
+                          label={
+                            field.booked
+                              ? `Đã đặt: ${field.booked}`
+                              : "Trống khung giờ này"
+                          }
+                          color={field.booked ? "warning" : "success"}
+                          size="small"
+                          sx={{ ml: 1 }}
+                        />
+                      )}
                     </Box>
                     <Typography
                       variant="subtitle1"

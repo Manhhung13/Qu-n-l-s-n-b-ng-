@@ -5,7 +5,6 @@ import {
   Grid,
   Card,
   CardContent,
-  CardHeader,
   Chip,
   Table,
   TableHead,
@@ -17,16 +16,24 @@ import {
   Box,
   Stack,
   TextField,
+  Avatar,
 } from "@mui/material";
 import ManagerLayout from "../../layouts/ManagerLayout";
 import axiosClient from "../../api/axiosClient";
 
-// Hàm chuyển đổi màu trạng thái sân
+// Map màu chip trực quan
 const statusColor = (status) => {
-  if (status === "Sân hoạt động bình thường ") return "success";
-  if (status === "Đang sử dụng") return "warning";
-  if (status === "Bảo trì") return "error";
+  const s = status?.trim().toLowerCase();
+  if (s === "sân hoạt động bình thường") return "success";
+  if (s === "đang sử dụng") return "warning";
+  if (s === "sân đang bảo trì") return "error";
+  if (s === "bảo trì") return "error";
   return "default";
+};
+
+const statusLabel = (status) => {
+  if (!status) return "Không rõ";
+  return status.charAt(0).toUpperCase() + status.slice(1);
 };
 
 export default function Dashboard() {
@@ -39,19 +46,17 @@ export default function Dashboard() {
     new Date().toISOString().slice(0, 10)
   );
 
-  // Lấy sân và thống kê (chỉ gọi 1 lần lúc khởi tạo)
   useEffect(() => {
     const fetchFieldsAndStats = async () => {
       setLoading(true);
       setError("");
       try {
         const fieldsRes = await axiosClient.get("/manager/dashboard/fields");
-        setFields(fieldsRes.data);
-
+        setFields(fieldsRes.data || []);
         const statsRes = await axiosClient.get(
           "/manager/dashboard/stats/today"
         );
-        setStats(statsRes.data);
+        setStats(statsRes.data || {});
       } catch {
         setError("Không thể tải Dashboard. Hãy thử lại!");
       } finally {
@@ -61,7 +66,6 @@ export default function Dashboard() {
     fetchFieldsAndStats();
   }, []);
 
-  // Lấy lịch booking khi selectedDate thay đổi
   useEffect(() => {
     const fetchBookings = async () => {
       try {
@@ -70,7 +74,7 @@ export default function Dashboard() {
         const bookingsRes = await axiosClient.get(
           `/manager/dashboard/bookings?date=${selectedDate}`
         );
-        setBookings(bookingsRes.data);
+        setBookings(bookingsRes.data || []);
       } catch {
         setError("Không thể tải lịch đặt sân. Hãy thử lại!");
       } finally {
@@ -111,7 +115,7 @@ export default function Dashboard() {
                   <Card>
                     <CardContent>
                       <Typography variant="h6">
-                        Tổng sân sân hoạt động bình thường{" "}
+                        Sân hoạt động bình thường
                       </Typography>
                       <Typography variant="h4" color="success.main">
                         {stats.freeFields}
@@ -155,28 +159,52 @@ export default function Dashboard() {
               />
             </Box>
 
-            {/* Bảng trạng thái các sân */}
+            {/* Trạng thái các sân - Giao diện rõ ràng, màu sắc đẹp, bố trí grid responsive */}
             <Box mb={3}>
-              <Typography variant="h6" mb={1}>
+              <Typography variant="h6" mb={2}>
                 Trạng thái các sân
               </Typography>
-              <Stack direction="row" spacing={2} flexWrap="wrap">
+              <Grid container spacing={2}>
                 {fields.map((field) => (
-                  <Card key={field.id} sx={{ minWidth: 220, mb: 1 }}>
-                    <CardHeader
-                      title={field.name}
-                      subheader={field.type + " - " + field.location}
-                      action={
-                        <Chip
-                          label={field.status}
-                          color={statusColor(field.status)}
-                          size="small"
-                        />
-                      }
-                    />
-                  </Card>
+                  <Grid item xs={12} sm={6} md={4} lg={3} key={field.id}>
+                    <Card
+                      sx={{
+                        borderLeft: `6px solid`,
+                        borderColor: `${statusColor(field.status)}.main`,
+                        boxShadow: 2,
+                      }}
+                    >
+                      <CardContent
+                        sx={{ display: "flex", alignItems: "center" }}
+                      >
+                        <Avatar
+                          sx={{
+                            bgcolor: `${statusColor(field.status)}.main`,
+                            mr: 2,
+                          }}
+                        >
+                          {field.name?.[0]?.toUpperCase() || "?"}
+                        </Avatar>
+                        <Box flexGrow={1}>
+                          <Typography variant="h6">{field.name}</Typography>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ mb: 1 }}
+                          >
+                            {field.type} - {field.location}
+                          </Typography>
+                          <Chip
+                            label={statusLabel(field.status)}
+                            color={statusColor(field.status)}
+                            size="small"
+                          />
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  </Grid>
                 ))}
-              </Stack>
+              </Grid>
             </Box>
 
             {/* Lịch đặt sân ngày đã chọn */}

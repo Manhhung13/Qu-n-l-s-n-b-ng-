@@ -36,7 +36,6 @@ export default function Login() {
     try {
       const res = await axiosClient.post("/users/login", form);
       console.log(res.data);
-
       login(res.data.user, res.data.token);
       // Kiểm tra role và điều hướng
       const role = res.data?.user?.role;

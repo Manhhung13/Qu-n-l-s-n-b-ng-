@@ -1,7 +1,8 @@
 import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
 import { Link } from "react-router-dom";
-
+import useAuth from "../context/useAuth";
 export default function Header() {
+  const { logout } = useAuth();
   return (
     <AppBar
       position="fixed"
@@ -27,16 +28,18 @@ export default function Header() {
         >
           {/* Bạn nên thay ảnh/logo ở đây nếu có */}
           <span style={{ fontFamily: "monospace", letterSpacing: 2 }}>
-            ⚽ Store
+            ⚽ Quản lý sân bóng
           </span>
         </Box>
         {/* Giữa: Có thể thêm search hoặc bỏ trống */}
         <Box sx={{ flexGrow: 1 }} />
-        <Button color="primary" LinkComponent={Link} to="/home">
-          Trang chủ
-        </Button>
 
-        <Button color="primary" LinkComponent={Link} to="/login">
+        <Button
+          color="primary"
+          onClick={logout}
+          LinkComponent={Link}
+          to="/login"
+        >
           Đăng xuất
         </Button>
       </Toolbar>
