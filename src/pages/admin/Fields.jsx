@@ -97,7 +97,7 @@ export default function FieldManager() {
         Quản Lý Sân Bóng
       </Typography>
       <Box display="flex" justifyContent="center" mb={3}>
-        <Button variant="contained" size="large" href="/fields/add">
+        <Button variant="contained" size="large" href="/admin/addfield">
           + Thêm Sân Mới
         </Button>
       </Box>
@@ -154,7 +154,7 @@ export default function FieldManager() {
                       onClick={() =>
                         window.confirm("Chắc chắn xóa sân này?") &&
                         axiosClient
-                          .delete(`/fields/${field.id}`)
+                          .delete(`/admin/fields/${field.id}`)
                           .then(() =>
                             setFields((prev) =>
                               prev.filter((f) => f.id !== field.id)

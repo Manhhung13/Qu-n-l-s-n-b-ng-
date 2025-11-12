@@ -22,7 +22,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
-  const { setUser } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
   const [keepLogin, setKeepLogin] = useState(true);
 
@@ -35,10 +35,9 @@ export default function Login() {
     setError("");
     try {
       const res = await axiosClient.post("/users/login", form);
-      setUser(res.data); // Cập nhật context app
-      if (keepLogin) {
-        localStorage.setItem("user", JSON.stringify(res.data));
-      }
+      console.log(res.data);
+
+      login(res.data.user, res.data.token);
       // Kiểm tra role và điều hướng
       const role = res.data?.user?.role;
       if (role === "admin") {
