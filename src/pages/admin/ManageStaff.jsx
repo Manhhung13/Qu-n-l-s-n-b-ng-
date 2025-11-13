@@ -48,9 +48,10 @@ export default function ManageStaff() {
     setLoading(true);
     setError("");
     try {
-      const res = await axiosClient.get("/staffs");
+      const res = await axiosClient.get("/admin/staffs");
       setStaffs(res.data);
     } catch {
+      console.log("Error fetching staffs :", error);
       setError("Không thể tải danh sách nhân sự!");
     }
     setLoading(false);
@@ -84,10 +85,10 @@ export default function ManageStaff() {
         // Update (không gửi password nếu bỏ trống)
         const updateData = { ...form };
         if (!updateData.password) delete updateData.password;
-        await axiosClient.put(`/staffs/${editingStaff._id}`, updateData);
+        await axiosClient.put(`/admin/staffs/${editingStaff.id}`, updateData);
       } else {
         // Create
-        await axiosClient.post("/staffs", form);
+        await axiosClient.post("/admin/staffs", form);
       }
       await fetchStaffs();
       handleCloseDialog();
@@ -100,7 +101,7 @@ export default function ManageStaff() {
   const handleDelete = async (id) => {
     if (!window.confirm("Bạn chắc chắn muốn xóa nhân viên này?")) return;
     try {
-      await axiosClient.delete(`/staffs/${id}`);
+      await axiosClient.delete(`/admin/staffs/${id}`);
       await fetchStaffs();
     } catch {
       setError("Không xóa được nhân viên!");
@@ -137,7 +138,7 @@ export default function ManageStaff() {
             </TableHead>
             <TableBody>
               {staffs.map((staff) => (
-                <TableRow key={staff._id}>
+                <TableRow key={staff.id}>
                   <TableCell>{staff.name}</TableCell>
                   <TableCell>{staff.email}</TableCell>
                   <TableCell>{staff.phone}</TableCell>
@@ -157,7 +158,7 @@ export default function ManageStaff() {
                       <EditIcon />
                     </IconButton>
                     <IconButton
-                      onClick={() => handleDelete(staff._id)}
+                      onClick={() => handleDelete(staff.id)}
                       size="small"
                       color="error"
                     >

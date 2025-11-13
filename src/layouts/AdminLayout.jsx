@@ -18,7 +18,7 @@ const adminMenu = [
     icon: <PeopleAltIcon fontSize="large" />,
   },
   {
-    label: "Bảng giá",
+    label: "Quản lý sân bóng ",
     path: "/admin/field",
     icon: <LocalOfferIcon fontSize="large" />,
   },
