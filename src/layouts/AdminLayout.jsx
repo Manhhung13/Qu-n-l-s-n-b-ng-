@@ -5,7 +5,7 @@ import Sidebar from "../components/Sidebar";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import LocalOfferIcon from "@mui/icons-material/LocalOffer";
-
+import MiscellaneousServicesIcon from "@mui/icons-material/MiscellaneousServices";
 const adminMenu = [
   {
     label: "Báo cáo",
@@ -21,6 +21,11 @@ const adminMenu = [
     label: "Quản lý sân bóng ",
     path: "/admin/field",
     icon: <LocalOfferIcon fontSize="large" />,
+  },
+  {
+    label: "Quản lý dịch vụ ngoài",
+    path: "/admin/services",
+    icon: <MiscellaneousServicesIcon fontSize="large" />,
   },
   // Có thể bổ sung mục khác cho admin ở đây
 ];

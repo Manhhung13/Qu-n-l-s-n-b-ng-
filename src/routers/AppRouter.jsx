@@ -22,6 +22,7 @@ import AdminReports from "../pages/admin/Reports";
 import ManageStaff from "../pages/admin/ManageStaff";
 import Field from "../pages/admin/Fields";
 import AddField from "../pages/admin/Add_Field";
+import Service_Manager from "../pages/admin/Service_manager";
 
 // Layouts
 import UserLayout from "../layouts/UserLayout";
@@ -150,6 +151,16 @@ export default function AppRouter() {
             <PrivateRoute>
               <AdminLayout>
                 <AddField />
+              </AdminLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin/services"
+          element={
+            <PrivateRoute>
+              <AdminLayout>
+                <Service_Manager />
               </AdminLayout>
             </PrivateRoute>
           }
