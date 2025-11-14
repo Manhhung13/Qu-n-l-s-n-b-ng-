@@ -5,5 +5,5 @@ const Dash_board = require("../../controllers/manager/Dash_board.controller");
 router.get("/fields", Dash_board.getAllFields);
 router.get("/bookings", Dash_board.getBookingsByDate);
 router.get("/stats/today", Dash_board.getStatsToday);
-
+router.get("/service-orders", Dash_board.getServiceOrdersByDate);
 module.exports = router;

@@ -23,7 +23,8 @@ exports.getBookingsByDate = async (req, res) => {
         b.start_time,
         b.end_time,
         CONCAT(DATE_FORMAT(b.start_time, '%H:%i'), ' - ', DATE_FORMAT(b.end_time, '%H:%i')) AS timeSlot,
-        f.name as fieldName
+        f.name as fieldName,
+        f.price as fieldPrice
       FROM bookings b
       LEFT JOIN fields f ON b.field_id = f.id
       WHERE b.date = ?
@@ -103,5 +104,47 @@ WHERE
     });
   } catch (err) {
     res.status(500).json({ error: "Error fetching statistics" });
+  }
+};
+exports.getServiceOrdersByDate = async (req, res) => {
+  try {
+    const date = req.query.date; // yyyy-mm-dd
+    console.log("Fetching service orders for date:", date);
+    // Lấy tổng số lượng đặt và tổng tiền theo từng dịch vụ trong ngày
+    const [rows] = await db.query(
+      `SELECT 
+         s.name,
+         SUM(bs.quantity) AS count,
+         s.price,
+         SUM(bs.quantity * s.price) AS totalPrice
+       FROM booking_services bs
+       JOIN services s ON bs.service_id = s.id
+       JOIN bookings b ON bs.booking_id = b.id
+       WHERE b.date = ?
+       GROUP BY bs.service_id
+       ORDER BY s.name ASC`,
+      [date]
+    );
+
+    // Tính tổng giá trị các dịch vụ ngoài trong ngày
+    const total = rows.reduce(
+      (acc, row) => acc + parseFloat(row.totalPrice || 0),
+      0
+    );
+    // console.log("total:", total);
+    res.json({
+      orders: rows.map((row) => ({
+        name: row.name,
+        count: row.count,
+        price: row.price,
+        totalPrice: row.totalPrice,
+      })),
+      total,
+    });
+  } catch (err) {
+    console.error(err);
+    res
+      .status(500)
+      .json({ message: "Không thể tải lịch sử đặt dịch vụ ngoài" });
   }
 };

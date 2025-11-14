@@ -4,7 +4,7 @@ const tk_email = process.env.tk_email;
 const mk_email = process.env.mk_email;
 exports.checkinBooking = async (req, res) => {
   const bookingId = req.params.id;
-  const { services = [], totalServicesFee = 0 } = req.body || {};
+
   try {
     // Cập nhật trạng thái booking
     const updateBookingSQL = `
@@ -13,16 +13,6 @@ exports.checkinBooking = async (req, res) => {
       WHERE id = ?
     `;
     await db.execute(updateBookingSQL, [bookingId]);
-
-    // 2. Lưu các dịch vụ ngoài vào bảng booking_services (nếu có)
-    if (Array.isArray(services) && services.length > 0) {
-      for (const item of services) {
-        await db.execute(
-          "INSERT INTO booking_services (booking_id, service_id, quantity) VALUES (?, ?, ?)",
-          [bookingId, item.serviceId, item.quantity]
-        );
-      }
-    }
 
     // 3. Lấy thông tin booking & user/sân để thông báo
     const [bookingRows] = await db.execute(
@@ -105,8 +95,7 @@ exports.checkinBooking = async (req, res) => {
 // đồng thời cập nhật trạng thái sân sang "Trống"
 exports.checkoutBooking = async (req, res) => {
   const bookingId = req.params.id;
-  const { extraFee = 0 } = req.body;
-
+  const { extraFee = 0, services = [], totalServicesFee = 0 } = req.body || {};
   try {
     // Cập nhật trạng thái booking và extra fee
     const updateBookingSQL = `
@@ -115,6 +104,15 @@ exports.checkoutBooking = async (req, res) => {
       WHERE id = ?
     `;
     await db.execute(updateBookingSQL, [extraFee, bookingId]);
+    // 2. Lưu các dịch vụ ngoài vào bảng booking_services (nếu có)
+    if (Array.isArray(services) && services.length > 0) {
+      for (const item of services) {
+        await db.execute(
+          "INSERT INTO booking_services (booking_id, service_id, quantity) VALUES (?, ?, ?)",
+          [bookingId, item.serviceId, item.quantity]
+        );
+      }
+    }
 
     res.json({ message: "Check-out thành công" });
   } catch (error) {

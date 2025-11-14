@@ -11,6 +11,8 @@ const manager_Checkin_Checkout = require("./routes/manager/Checkin_Checkout");
 const manager_Dashboard = require("./routes/manager/Dashboard");
 const updateFieldStatus = require("./routes/admin/update_field");
 const Staff_Manager = require("./routes/admin/Staff_Manager");
+const Service_Manager = require("./routes/admin/Service_Manager");
+const get_services = require("./routes/manager/get_services");
 const auth = require("./middlewares/auth");
 const app = express();
 app.use(cors());
@@ -26,6 +28,8 @@ app.use("/notifications", roleAuth("user"), notificationsRoutes);
 app.use("/manager", roleAuth("manager"), manager_Checkin_Checkout);
 app.use("/admin/fields", roleAuth("admin"), updateFieldStatus);
 app.use("/admin/staffs", roleAuth("admin"), Staff_Manager);
+app.use("/admin/services", roleAuth("admin"), Service_Manager);
+app.use("/manager/services", roleAuth("manager"), get_services);
 app.get("/", (req, res) => {
   res.send("Server API đang chạy!");
 });
