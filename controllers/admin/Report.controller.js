@@ -13,7 +13,7 @@ exports.getReports = async (req, res) => {
          SUM(price) AS totalRevenue 
        FROM bookings 
        WHERE MONTH(date) = ? AND YEAR(date) = ?`,
-      [month, year]
+      [month, year],
     );
 
     // Truy vấn top sân theo số lượt đặt
@@ -25,7 +25,7 @@ exports.getReports = async (req, res) => {
        GROUP BY fields.name
        ORDER BY count DESC
        LIMIT 1`,
-      [month, year]
+      [month, year],
     );
 
     // Truy vấn top khách hàng VIP
@@ -37,7 +37,7 @@ exports.getReports = async (req, res) => {
        GROUP BY users.name
        ORDER BY count DESC
        LIMIT 1`,
-      [month, year]
+      [month, year],
     );
 
     // Lấy tất cả các lượt đặt chi tiết
@@ -48,7 +48,7 @@ exports.getReports = async (req, res) => {
        JOIN users ON bookings.customer_id = users.id
        WHERE MONTH(bookings.date) = ? AND YEAR(bookings.date) = ?
        ORDER BY bookings.date DESC`,
-      [month, year]
+      [month, year],
     );
 
     res.json({

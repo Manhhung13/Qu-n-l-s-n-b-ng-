@@ -24,7 +24,7 @@ exports.createBooking = async (req, res) => {
     await db.execute(
       `INSERT INTO bookings (user_id, field_id, date, start_time, end_time, name, phone, email, note)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [user_id, field_id, date, start_time, end_time, name, phone, email, note]
+      [user_id, field_id, date, start_time, end_time, name, phone, email, note],
     );
 
     res.status(201).json({ message: "Đặt sân thành công!" });

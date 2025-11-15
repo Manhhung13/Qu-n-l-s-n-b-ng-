@@ -4,7 +4,7 @@ const db = require("../../db");
 exports.getAllStaffs = async (req, res) => {
   try {
     const [rows] = await db.execute(
-      "SELECT * FROM users WHERE role like 'manager' ORDER BY id DESC  "
+      "SELECT * FROM users WHERE role like 'manager' ORDER BY id DESC  ",
     );
     res.json(rows);
   } catch (error) {
@@ -19,7 +19,7 @@ exports.createStaff = async (req, res) => {
   try {
     await db.execute(
       "INSERT INTO users (name, email, phone, role, password) VALUES (?, ?, ?, ?, ?)",
-      [name, email, phone, role, password]
+      [name, email, phone, role, password],
     );
     res.status(201).json({ message: "Tạo nhân viên thành công" });
   } catch (error) {
@@ -35,12 +35,12 @@ exports.updateStaff = async (req, res) => {
     if (password) {
       await db.execute(
         "UPDATE users SET name=?, email=?, phone=?, role=?, password=? WHERE id=?",
-        [name, email, phone, role, password, id]
+        [name, email, phone, role, password, id],
       );
     } else {
       await db.execute(
         "UPDATE users SET name=?, email=?, phone=?, role=? WHERE id=?",
-        [name, email, phone, role, id]
+        [name, email, phone, role, id],
       );
     }
 

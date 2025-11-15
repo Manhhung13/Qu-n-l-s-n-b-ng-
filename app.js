@@ -13,6 +13,7 @@ const updateFieldStatus = require("./routes/admin/update_field");
 const Staff_Manager = require("./routes/admin/Staff_Manager");
 const Service_Manager = require("./routes/admin/Service_Manager");
 const get_services = require("./routes/manager/get_services");
+const dashboard_admin = require("./routes/admin/Dashboard");
 const auth = require("./middlewares/auth");
 const app = express();
 app.use(cors());
@@ -30,6 +31,7 @@ app.use("/admin/fields", roleAuth("admin"), updateFieldStatus);
 app.use("/admin/staffs", roleAuth("admin"), Staff_Manager);
 app.use("/admin/services", roleAuth("admin"), Service_Manager);
 app.use("/manager/services", roleAuth("manager"), get_services);
+app.use("/admin/dashboard", roleAuth("admin"), dashboard_admin);
 app.get("/", (req, res) => {
   res.send("Server API đang chạy!");
 });

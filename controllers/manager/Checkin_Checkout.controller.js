@@ -21,7 +21,7 @@ exports.checkinBooking = async (req, res) => {
       JOIN users u ON b.user_id = u.id
       JOIN fields f ON b.field_id = f.id
       WHERE b.id = ?`,
-      [bookingId]
+      [bookingId],
     );
     const booking = bookingRows[0];
 
@@ -52,7 +52,7 @@ exports.checkinBooking = async (req, res) => {
 
     await db.execute(
       "INSERT INTO notifications (user_id, content, type, is_read, created_at, status) VALUES (?, ?, ?, 0, NOW(), ?)",
-      [booking.user_id, notificationContent, "xac nhan", "chưa xác nhận"]
+      [booking.user_id, notificationContent, "xac nhan", "chưa xác nhận"],
     );
     console.log("MAIL_USER:", process.env.tk_email);
     console.log("MAIL_PASS:", process.env.mk_email);
@@ -109,7 +109,7 @@ exports.checkoutBooking = async (req, res) => {
       for (const item of services) {
         await db.execute(
           "INSERT INTO booking_services (booking_id, service_id, quantity) VALUES (?, ?, ?)",
-          [bookingId, item.serviceId, item.quantity]
+          [bookingId, item.serviceId, item.quantity],
         );
       }
     }
