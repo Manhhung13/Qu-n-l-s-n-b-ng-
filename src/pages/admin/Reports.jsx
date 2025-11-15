@@ -1,173 +1,234 @@
 import React, { useEffect, useState } from "react";
 import {
-  Container,
-  Typography,
+  Card,
   Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  Alert,
-  CircularProgress,
-  Box,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Button,
-  Grid,
-} from "@mui/material";
-import AdminLayout from "../../layouts/AdminLayout";
+  Statistic,
+  Row,
+  Col,
+  DatePicker,
+  Spin,
+  message,
+  Typography,
+} from "antd";
 import axiosClient from "../../api/axiosClient";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+} from "recharts";
+import moment from "moment";
+const { RangePicker } = DatePicker;
+const { Text } = Typography;
 
-// Xuất excel có thể dùng thư viện như xlsx nếu cần
-// import * as XLSX from "xlsx";
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
 
-export default function Reports() {
-  const [summary, setSummary] = useState(null);
-  const [bookings, setBookings] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [month, setMonth] = useState(new Date().getMonth() + 1);
-  const [year, setYear] = useState(new Date().getFullYear());
+const Dashboard = () => {
+  const [loading, setLoading] = useState(false);
+  const [dateRange, setDateRange] = useState([
+    moment().startOf("month"),
+    moment().endOf("month"),
+  ]);
+  const [stats, setStats] = useState({});
+  const [revenueByDay, setRevenueByDay] = useState([]);
+  const [revenueByField, setRevenueByField] = useState([]);
+  const [orders, setOrders] = useState([]);
 
-  // Lấy dữ liệu báo cáo động từ backend
-  const fetchReports = async () => {
+  // Tối ưu hóa phạm vi ngày cho RangePicker
+  const minDate = moment("2018-01-01");
+  const maxDate = moment("2035-12-31");
+
+  const fetchData = async () => {
     setLoading(true);
-    setError("");
     try {
-      // giả sử backend hỗ trợ filter theo month/year
-      const res = await axiosClient.get(`/reports?month=${month}&year=${year}`);
-      setSummary(res.data.summary); // { totalBookings, totalRevenue, topFields, topCustomers }
-      setBookings(res.data.bookings); // chi tiết
-    } catch {
-      setError("Không thể tải báo cáo!");
+      const formattedRange = [
+        dateRange[0].format("YYYY-MM-DD"),
+        dateRange[1].format("YYYY-MM-DD"),
+      ];
+      const response = await axiosClient.get("/admin/dashboard", {
+        params: { startDate: formattedRange[0], endDate: formattedRange[1] },
+      });
+      const { data } = response;
+      setStats(data.stats);
+      setRevenueByDay(data.revenueByDay);
+      setRevenueByField(data.revenueByField);
+      setOrders(data.orders);
+    } catch (error) {
+      message.error("Lỗi khi tải dữ liệu");
     }
     setLoading(false);
   };
 
   useEffect(() => {
-    fetchReports();
-    // eslint-disable-next-line
-  }, [month, year]);
+    fetchData();
+  }, [dateRange]);
 
-  // Xuất excel về phía client nếu muốn
-  // const handleExportExcel = () => { ... }
+  const columns = [
+    { title: "Mã đơn", dataIndex: "orderId", key: "orderId" },
+    { title: "Khách hàng", dataIndex: "customerName", key: "customerName" },
+    { title: "Sân", dataIndex: "fieldName", key: "fieldName" },
+    { title: "Giờ", dataIndex: "timeSlot", key: "timeSlot" },
+    { title: "Trạng thái", dataIndex: "status", key: "status" },
+    {
+      title: "Số tiền",
+      dataIndex: "amount",
+      key: "amount",
+      render: (val) =>
+        val.toLocaleString("vi-VN", { style: "currency", currency: "VND" }),
+    },
+  ];
+
+  // Hiện ngày đã chọn trên dashboard (ngắn gọn, rõ ràng)
+  const selectedStart = dateRange[0]?.format("YYYY-MM-DD");
+  const selectedEnd = dateRange[1]?.format("YYYY-MM-DD");
+
+  // Hàm khóa (disable) ngày ngoài phạm vi cho phép, UX tối ưu
+  const disabledDate = (current) =>
+    current && (current < minDate || current > maxDate);
 
   return (
-    <AdminLayout>
-      <Container sx={{ mt: 4 }}>
-        <Typography variant="h4" mb={3}>
-          Báo cáo tổng hợp đặt sân và doanh thu
-        </Typography>
-        <Grid container spacing={2} mb={2}>
-          <Grid item xs={6} sm={2}>
-            <FormControl fullWidth>
-              <InputLabel>Tháng</InputLabel>
-              <Select
-                label="Tháng"
-                value={month}
-                onChange={(e) => setMonth(e.target.value)}
+    <Spin spinning={loading}>
+      <Row gutter={[16, 16]}>
+        <Col xs={24} sm={12} md={6}>
+          <Card>
+            <Statistic
+              title="Tổng doanh thu"
+              value={stats.totalRevenue || 0}
+              suffix="VND"
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <Card>
+            <Statistic title="Tổng số đơn đặt" value={stats.totalOrders || 0} />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <Card>
+            <Statistic
+              title="Khách hàng quay lại"
+              value={stats.returningCustomers || 0}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <Card>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <RangePicker
+                value={dateRange}
+                onChange={(dates) => dates && setDateRange(dates)}
+                allowClear={false}
+                style={{
+                  width: "100%",
+                  fontSize: "1.2rem",
+                  padding: 10,
+                  borderRadius: 8,
+                }}
+                size="large"
+                format="YYYY-MM-DD"
+                inputReadOnly={true}
+                placement="bottomLeft"
+                disabledDate={disabledDate}
+                bordered={true}
+                showNow={true}
+                showToday={true}
+                dropdownClassName="custom-range-picker-panel"
+              />
+              <Text type="secondary" style={{ fontSize: "1rem", marginTop: 4 }}>
+                {selectedStart} → {selectedEnd}
+              </Text>
+            </div>
+          </Card>
+        </Col>
+      </Row>
+
+      <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+        <Col xs={24} md={12}>
+          <Card title="Doanh thu theo ngày">
+            <ResponsiveContainer width="100%" height={340}>
+              <BarChart
+                data={revenueByDay.map((item) => ({
+                  ...item,
+                  date: item.date ? item.date.slice(0, 10) : "",
+                }))}
+                margin={{ top: 20, right: 20, left: 0, bottom: 60 }}
               >
-                {[...Array(12).keys()].map((m) => (
-                  <MenuItem key={m + 1} value={m + 1}>
-                    {m + 1}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={6} sm={2}>
-            <FormControl fullWidth>
-              <InputLabel>Năm</InputLabel>
-              <Select
-                label="Năm"
-                value={year}
-                onChange={(e) => setYear(e.target.value)}
-              >
-                {[2025, 2024, 2023].map((y) => (
-                  <MenuItem key={y} value={y}>
-                    {y}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          {/* <Grid item xs={12} sm={4}>
-            <Button variant="outlined" onClick={handleExportExcel}>Xuất Excel</Button>
-          </Grid> */}
-        </Grid>
-        {loading ? (
-          <CircularProgress />
-        ) : error ? (
-          <Alert severity="error">{error}</Alert>
-        ) : (
-          <>
-            <Box mb={2}>
-              <Typography variant="h6">Tổng quan</Typography>
-              <ul>
-                <li>
-                  Tổng lượt đặt:{" "}
-                  <b>{summary?.totalBookings?.toLocaleString("vi-VN") || 0}</b>
-                </li>
-                <li>
-                  Tổng doanh thu:{" "}
-                  <b>
-                    {summary?.totalRevenue?.toLocaleString("vi-VN") || 0} VND
-                  </b>
-                </li>
-                <li>
-                  Sân có nhiều lượt đặt nhất:{" "}
-                  <b>
-                    {summary?.topFields?.[0]?.name
-                      ? `${summary.topFields[0].name} (${summary.topFields[0].count} lượt)`
-                      : "Không có dữ liệu"}
-                  </b>
-                </li>
-                <li>
-                  Khách hàng VIP/thường xuyên nhất:{" "}
-                  <b>
-                    {summary?.topCustomers?.[0]?.name
-                      ? `${summary.topCustomers[0].name} (${summary.topCustomers[0].count} lượt)`
-                      : "Không có dữ liệu"}
-                  </b>
-                </li>
-              </ul>
-            </Box>
-            <Typography variant="h6" mb={1}>
-              Bảng chi tiết các lượt đặt
-            </Typography>
-            <Box sx={{ overflowX: "auto" }}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Ngày</TableCell>
-                    <TableCell>Sân</TableCell>
-                    <TableCell>Khách hàng</TableCell>
-                    <TableCell>Giá trị</TableCell>
-                    <TableCell>Trạng thái</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {bookings.map((row) => (
-                    <TableRow key={row._id}>
-                      <TableCell>
-                        {new Date(row.date).toLocaleDateString("vi-VN")}
-                      </TableCell>
-                      <TableCell>{row.field?.name || ""}</TableCell>
-                      <TableCell>{row.customerName || ""}</TableCell>
-                      <TableCell>
-                        {row.price ? row.price.toLocaleString("vi-VN") : ""}
-                      </TableCell>
-                      <TableCell>{row.status}</TableCell>
-                    </TableRow>
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 12 }}
+                  angle={-40}
+                  textAnchor="end"
+                  interval={0}
+                  height={80}
+                />
+                <YAxis tickFormatter={(v) => v.toLocaleString("vi-VN")} />
+                <Tooltip
+                  labelFormatter={(val) => `Ngày: ${val}`}
+                  formatter={(v) => `${v.toLocaleString("vi-VN")} VND`}
+                />
+                <Bar dataKey="revenue" fill="#8884d8" />
+              </BarChart>
+            </ResponsiveContainer>
+          </Card>
+        </Col>
+
+        <Col xs={24} md={12}>
+          <Card title="Doanh thu theo sân">
+            <ResponsiveContainer width="100%" height={320}>
+              <PieChart>
+                <Pie
+                  data={revenueByField.map((item) => ({
+                    ...item,
+                    revenue: Number(item.revenue),
+                  }))}
+                  dataKey="revenue"
+                  nameKey="field"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={90}
+                  label={({ field, percent }) =>
+                    `${field}: ${(percent * 100).toFixed(1)}%`
+                  }
+                >
+                  {revenueByField.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
                   ))}
-                </TableBody>
-              </Table>
-            </Box>
-          </>
-        )}
-      </Container>
-    </AdminLayout>
+                </Pie>
+                <Legend />
+                <Tooltip
+                  formatter={(value, name, props) =>
+                    `${value.toLocaleString("vi-VN")} VND`
+                  }
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </Card>
+        </Col>
+      </Row>
+
+      <Row style={{ marginTop: 16 }}>
+        <Col span={24}>
+          <Card title="Danh sách đơn đặt sân">
+            <Table
+              columns={columns}
+              dataSource={orders}
+              rowKey="orderId"
+              pagination={{ pageSize: 5 }}
+            />
+          </Card>
+        </Col>
+      </Row>
+    </Spin>
   );
-}
+};
+
+export default Dashboard;

@@ -49,14 +49,15 @@ export default function AdminLayout({
             flexDirection: "column",
             ml: showSidebar ? `${drawerWidth}px` : 0,
             minHeight: "100vh",
-            transition: "margin-left 0.3s",
             bgcolor: "#f5f7fa",
+            // Đảm bảo layout luôn căn giữa cho content chính
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
           <Toolbar sx={{ minHeight: 64 }} />
           <Container
-            maxWidth="lg"
-            disableGutters
+            maxWidth="xl"
             sx={{
               pt: 5,
               pb: 4,
@@ -64,24 +65,25 @@ export default function AdminLayout({
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
+              justifyContent: "center", // căn giữa theo chiều ngang
               position: "relative",
             }}
           >
             <Paper
-              elevation={2}
+              elevation={3}
               sx={{
                 width: "100%",
-                maxWidth: 1200,
-                minHeight: 400,
+                maxWidth: 960, // to hơn, phù hợp desktop
+                minHeight: 320,
                 px: { xs: 2, md: 6 },
-                py: 4,
+                py: { xs: 2, md: 3 },
                 bgcolor: "#fff",
-                borderRadius: 3,
-                boxShadow: "0 2px 10px rgba(30,60,90,0.06)",
+                borderRadius: 4,
+                boxShadow: 3,
+                margin: "0 auto",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                margin: "0 auto",
               }}
             >
               {children}
