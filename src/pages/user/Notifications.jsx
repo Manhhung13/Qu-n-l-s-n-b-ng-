@@ -11,6 +11,8 @@ import {
   CircularProgress,
   Divider,
   Chip,
+  Paper,
+  Box,
 } from "@mui/material";
 import CheckIcon from "@mui/icons-material/CheckCircleOutline";
 import CloseIcon from "@mui/icons-material/HighlightOff";
@@ -27,7 +29,6 @@ export default function Notifications() {
       setLoading(true);
       setError("");
       try {
-        // Giả sử backend trả về: [{_id, message, status, createdAt}, ...]
         const res = await axiosClient.get("/notifications");
         setNotifications(res.data);
       } catch (error) {
@@ -39,7 +40,6 @@ export default function Notifications() {
     fetchNotifications();
   }, []);
 
-  // Xử lý xác nhận/xoá thông báo (nếu backend cho phép thao tác)
   const handleConfirm = async (id) => {
     try {
       await axiosClient.put(`/notifications/${id}/confirm`);
@@ -64,67 +64,125 @@ export default function Notifications() {
 
   return (
     <UserLayout>
-      <Container maxWidth="md" sx={{ mt: 4 }}>
-        <Typography variant="h4" mb={3}>
+      <Container maxWidth="sm" sx={{ mt: 5 }}>
+        <Typography
+          variant="h4"
+          align="center"
+          mb={3}
+          sx={{ fontWeight: 700, color: "#1976d2", letterSpacing: 1 }}
+        >
           Danh sách thông báo
         </Typography>
-        {loading ? (
-          <CircularProgress />
-        ) : error ? (
-          <Alert severity="error">{error}</Alert>
-        ) : notifications.length === 0 ? (
-          <Alert severity="info">Không có thông báo nào!</Alert>
-        ) : (
-          <List sx={{ bgcolor: "#f5f5f5", borderRadius: 1 }}>
-            {notifications.map((noti) => (
-              <React.Fragment key={noti._id}>
-                <ListItem>
-                  <ListItemText
-                    primary={noti.content}
-                    secondary={
-                      <>
-                        <Typography component="span" variant="caption">
-                          {new Date(noti.created_at).toLocaleString("vi-VN")}
-                        </Typography>
-                        {" — "}
-                        <Chip
-                          size="small"
-                          color={
-                            noti.status === "Đã xác nhận"
-                              ? "success"
-                              : "warning"
-                          }
-                          label={noti.status}
-                        />
-                      </>
-                    }
-                  />
-                  <ListItemSecondaryAction>
-                    {noti.status !== "Đã xác nhận" && (
-                      <IconButton
-                        edge="end"
-                        color="success"
-                        title="Xác nhận"
-                        onClick={() => handleConfirm(noti._id)}
-                      >
-                        <CheckIcon />
-                      </IconButton>
-                    )}
-                    <IconButton
-                      edge="end"
-                      color="error"
-                      title="Xoá"
-                      onClick={() => handleDelete(noti._id)}
+        <Box display="flex" justifyContent="center">
+          <Paper
+            elevation={4}
+            sx={{
+              p: { xs: 1, sm: 2 },
+              maxWidth: 480,
+              width: "100%",
+              borderRadius: 4,
+              bgcolor: "#fff",
+            }}
+          >
+            {loading ? (
+              <Box p={3} textAlign="center">
+                <CircularProgress />
+              </Box>
+            ) : error ? (
+              <Alert severity="error">{error}</Alert>
+            ) : notifications.length === 0 ? (
+              <Alert severity="info">Không có thông báo nào!</Alert>
+            ) : (
+              <List>
+                {notifications.map((noti, idx) => (
+                  <React.Fragment key={noti._id}>
+                    <ListItem
+                      sx={{
+                        borderRadius: 3,
+                        bgcolor: idx % 2 === 0 ? "#f9fafb" : "#f3f7fd",
+                        mb: 1.5,
+                        boxShadow: 1,
+                        px: { xs: 1, sm: 2 },
+                        py: 1.5,
+                        alignItems: "flex-start",
+                        transition: "box-shadow 0.2s",
+                        "&:hover": { boxShadow: 3 },
+                      }}
+                      secondaryAction={
+                        <Box sx={{ display: "flex", gap: 1 }}>
+                          {noti.status !== "Đã xác nhận" && (
+                            <IconButton
+                              edge="end"
+                              color="success"
+                              title="Xác nhận"
+                              sx={{
+                                "&:hover": { bgcolor: "#e3fcec" },
+                              }}
+                              onClick={() => handleConfirm(noti._id)}
+                            >
+                              <CheckIcon sx={{ fontSize: 26 }} />
+                            </IconButton>
+                          )}
+                          <IconButton
+                            edge="end"
+                            color="error"
+                            title="Xoá"
+                            sx={{
+                              "&:hover": { bgcolor: "#fdecea" },
+                            }}
+                            onClick={() => handleDelete(noti._id)}
+                          >
+                            <CloseIcon sx={{ fontSize: 26 }} />
+                          </IconButton>
+                        </Box>
+                      }
                     >
-                      <CloseIcon />
-                    </IconButton>
-                  </ListItemSecondaryAction>
-                </ListItem>
-                <Divider />
-              </React.Fragment>
-            ))}
-          </List>
-        )}
+                      <ListItemText
+                        primary={
+                          <Typography
+                            fontSize={17}
+                            fontWeight={500}
+                            sx={{ mb: 1 }}
+                          >
+                            {noti.content}
+                          </Typography>
+                        }
+                        secondary={
+                          <Box display="flex" alignItems="center" gap={1}>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{ flexShrink: 0, fontWeight: 500 }}
+                            >
+                              {new Date(noti.created_at).toLocaleString(
+                                "vi-VN"
+                              )}
+                            </Typography>
+                            <Chip
+                              size="small"
+                              color={
+                                noti.status === "Đã xác nhận"
+                                  ? "success"
+                                  : "warning"
+                              }
+                              label={noti.status}
+                              sx={{
+                                minWidth: 110,
+                                borderRadius: 2,
+                                fontSize: 13,
+                                ml: 1,
+                              }}
+                            />
+                          </Box>
+                        }
+                      />
+                    </ListItem>
+                  </React.Fragment>
+                ))}
+              </List>
+            )}
+          </Paper>
+        </Box>
       </Container>
     </UserLayout>
   );

@@ -91,7 +91,7 @@ export default function CheckinCheckout() {
     setSelectedBooking(booking);
     setExtraFee(booking.extraFee || "");
     try {
-      const res = await axiosClient.get("/manager/services");
+      const res = await axiosClient.get("/manager/list_service");
       setServices(res.data);
       setSelectedServices([]);
     } catch (error) {

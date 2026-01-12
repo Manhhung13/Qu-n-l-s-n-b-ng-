@@ -1,42 +1,89 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+.responsive-table {
+  width: 100%;
+  overflow-x: auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  margin: 0 auto 28px auto;
+  font-size: 1em;
+  min-width: 300px;
+}
+.responsive-table table {
+  border-collapse: collapse;
+  width: 100%;
+}
+.responsive-table th,
+.responsive-table td {
+  padding: 8px 12px;
+  text-align: center;
+  font-size: 1em;
+  /* Nếu thiết bị nhỏ thì chữ nhỏ lại */
+  word-break: break-word;
+}
+.responsive-table th {
+  background: #2471a3;
+  color: #fff;
+  font-weight: 600;
+}
+.responsive-table tr:nth-child(even) {
+  background: #f5f7fa;
+}
+.responsive-table tr:hover {
+  background: #dde5f5;
+}
+.responsive-table img {
+  vertical-align: middle;
+  margin-right: 6px;
+  border-radius: 50%;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+}
+@media (max-width: 900px) {
+  .history-flex {
+    flex-direction: column;
+    gap: 0px !important;
+  }
+  .responsive-table {
+    min-width: 0;
+  }
+}
+.page-nav {
+  margin: 10px auto 0 auto;
   text-align: center;
 }
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+.page-nav button {
+  background: #2471a3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 12px;
+  font-size: 1em;
+  margin: 0 4px;
+  cursor: pointer;
+  transition: background 0.2s;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+.page-nav button:disabled {
+  background: #7f8c8d;
+  cursor: not-allowed;
 }
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.page-nav span {
+  font-weight: 500;
 }
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+.section-title {
+  text-align: center;
+  margin-top: 24px;
+  margin-bottom: 8px;
+  font-size: 1.32em;
+  font-weight: bold;
+  color: #154360;
+  letter-spacing: 0.8px;
+}
+@media (max-width: 600px) {
+  .responsive-table th,
+  .responsive-table td {
+    padding: 4px 2px;
+    font-size: 0.88em;
   }
-  to {
-    transform: rotate(360deg);
+  .section-title {
+    font-size: 1.15em;
   }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
 }

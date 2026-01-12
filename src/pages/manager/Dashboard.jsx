@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import {
-  Container,
   Typography,
   Grid,
   Card,
@@ -14,7 +13,6 @@ import {
   Alert,
   CircularProgress,
   Box,
-  Stack,
   TextField,
   Avatar,
 } from "@mui/material";
@@ -85,6 +83,7 @@ export default function Dashboard() {
     };
     fetchBookings();
   }, [selectedDate]);
+
   useEffect(() => {
     const fetchServiceOrders = async () => {
       try {
@@ -101,12 +100,53 @@ export default function Dashboard() {
     fetchServiceOrders();
   }, [selectedDate]);
 
+  function formatVND(price) {
+    if (!price) return "0 VND";
+    return new Intl.NumberFormat("vi-VN").format(price) + " VND";
+  }
+
   return (
     <ManagerLayout>
-      <Container maxWidth="lg" sx={{ mt: 4 }}>
-        <Typography variant="h4" mb={3} align="center">
-          Quản lý - Dashboard
-        </Typography>
+      {/* Card lớn chiếm full vùng content bên phải sidebar */}
+      <Box
+        sx={{
+          bgcolor: "#fff",
+          borderRadius: 3,
+          boxShadow: "0 4px 20px rgba(15, 23, 42, 0.08)",
+          p: 3,
+          width: "100%",
+          maxWidth: "100%",
+          boxSizing: "border-box",
+        }}
+      >
+        {/* Header nhỏ phía trên */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            mb: 3,
+          }}
+        >
+          <Box>
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              Quản lý - Tổng quan
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Chào mừng trở lại, Quản trị viên
+            </Typography>
+          </Box>
+
+          <TextField
+            type="date"
+            size="small"
+            label="Chọn ngày"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+          />
+        </Box>
+
         {loading ? (
           <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
             <CircularProgress />
@@ -117,19 +157,17 @@ export default function Dashboard() {
           </Alert>
         ) : (
           <>
-            {/* Thống kê nhanh - auto chia đều, luôn full hàng */}
+            {/* Thống kê nhanh */}
             {stats && (
-              <Grid
-                container
-                spacing={3}
-                justifyContent="center"
-                alignItems="stretch"
-                sx={{ mb: 3 }}
-              >
+              <Grid container spacing={2} sx={{ mb: 3 }}>
                 <Grid item xs={12} sm={6} md={3}>
-                  <Card sx={{ height: "100%" }}>
+                  <Card sx={{ height: "100%", borderRadius: 3 }}>
                     <CardContent>
-                      <Typography variant="h6" gutterBottom>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        gutterBottom
+                      >
                         Tổng số lượt đặt hôm nay
                       </Typography>
                       <Typography variant="h4" color="primary">
@@ -138,11 +176,16 @@ export default function Dashboard() {
                     </CardContent>
                   </Card>
                 </Grid>
+
                 <Grid item xs={12} sm={6} md={3}>
-                  <Card sx={{ height: "100%" }}>
+                  <Card sx={{ height: "100%", borderRadius: 3 }}>
                     <CardContent>
-                      <Typography variant="h6" gutterBottom>
-                        Sân hoạt động bình thường
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        gutterBottom
+                      >
+                        Sân đang hoạt động
                       </Typography>
                       <Typography variant="h4" color="success.main">
                         {stats.freeFields}
@@ -150,26 +193,36 @@ export default function Dashboard() {
                     </CardContent>
                   </Card>
                 </Grid>
+
                 <Grid item xs={12} sm={6} md={3}>
-                  <Card sx={{ height: "100%" }}>
+                  <Card sx={{ height: "100%", borderRadius: 3 }}>
                     <CardContent>
-                      <Typography variant="h6" gutterBottom>
-                        Doanh thu từ đặt sân
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        gutterBottom
+                      >
+                        Doanh thu đặt sân
                       </Typography>
-                      <Typography variant="h4" color="secondary.main">
-                        {stats.fieldRevenue.toLocaleString("vi-VN")} VND
+                      <Typography variant="h5" color="secondary.main">
+                        {formatVND(stats.fieldRevenue)}
                       </Typography>
                     </CardContent>
                   </Card>
                 </Grid>
+
                 <Grid item xs={12} sm={6} md={3}>
-                  <Card sx={{ height: "100%" }}>
+                  <Card sx={{ height: "100%", borderRadius: 3 }}>
                     <CardContent>
-                      <Typography variant="h6" gutterBottom>
-                        Doanh thu từ dịch vụ ngoài
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        gutterBottom
+                      >
+                        Doanh thu dịch vụ
                       </Typography>
-                      <Typography variant="h4" color="secondary.main">
-                        {stats.serviceRevenue.toLocaleString("vi-VN")} VND
+                      <Typography variant="h5" color="secondary.main">
+                        {formatVND(stats.serviceRevenue)}
                       </Typography>
                     </CardContent>
                   </Card>
@@ -177,37 +230,23 @@ export default function Dashboard() {
               </Grid>
             )}
 
-            <Box mb={3} display="flex" justifyContent="center">
-              <TextField
-                type="date"
-                label="Chọn ngày xem lịch sử"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                InputLabelProps={{ shrink: true }}
-              />
-            </Box>
-
-            <Box mb={4}>
-              <Typography variant="h6" mb={2} align="center">
+            {/* Trạng thái các sân */}
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1.5 }}>
                 Trạng thái các sân
               </Typography>
-              <Grid
-                container
-                spacing={3}
-                justifyContent="center"
-                alignItems="stretch"
-              >
+              <Grid container spacing={2}>
                 {fields.map((field) => (
-                  <Grid item xs={12} sm={6} md={4} lg={3} key={field.id}>
+                  <Grid item xs={12} sm={6} md={3} key={field.id}>
                     <Card
                       sx={{
                         display: "flex",
                         flexDirection: "column",
-                        justifyContent: "center",
-                        minHeight: 165,
-                        boxShadow: 2,
-                        borderLeft: `6px solid`,
-                        borderColor: `${statusColor(field.status)}.main`,
+                        minHeight: 170,
+                        borderRadius: 3,
+                        boxShadow: 1,
+                        borderLeft: 4,
+                        borderLeftColor: `${statusColor(field.status)}.main`,
                       }}
                     >
                       <CardContent
@@ -220,43 +259,43 @@ export default function Dashboard() {
                         <Avatar
                           sx={{
                             bgcolor: `${statusColor(field.status)}.main`,
-                            width: 48,
-                            height: 48,
-                            fontSize: 24,
-                            mr: 2,
+                            width: 44,
+                            height: 44,
+                            fontSize: 22,
                           }}
                         >
                           {field.name?.[0]?.toUpperCase() || "?"}
                         </Avatar>
                         <Box flexGrow={1}>
                           <Typography
-                            variant="h6"
-                            fontWeight={600}
-                            sx={{ mb: 0.5 }}
+                            variant="subtitle1"
+                            sx={{ fontWeight: 600, mb: 0.5 }}
                           >
                             {field.name}
                           </Typography>
                           <Typography
                             variant="body2"
                             color="text.secondary"
-                            sx={{ mb: 1 }}
+                            sx={{ mb: 0.5 }}
                           >
-                            {field.type} - {field.location}
+                            {field.type} • {field.location}
                           </Typography>
                           <Typography
-                            variant="subtitle1"
-                            color="primary"
-                            fontWeight={500}
-                            sx={{ mb: 1 }}
+                            variant="body2"
+                            sx={{
+                              fontWeight: 600,
+                              color: "primary.main",
+                            }}
                           >
                             {field.price
-                              ? `${field.price.toLocaleString("vi-VN")} VND`
+                              ? formatVND(field.price)
                               : "Chưa cập nhật giá"}
                           </Typography>
                           <Chip
+                            size="small"
                             label={statusLabel(field.status)}
                             color={statusColor(field.status)}
-                            size="small"
+                            sx={{ mt: 0.5 }}
                           />
                         </Box>
                       </CardContent>
@@ -266,62 +305,45 @@ export default function Dashboard() {
               </Grid>
             </Box>
 
-            <Typography variant="h6" mt={3} mb={1} align="center">
-              Lịch đặt sân ngày {selectedDate}
+            {/* Lịch đặt sân */}
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1.5 }}>
+              Lịch đặt sân hôm nay
             </Typography>
             <Box sx={{ overflowX: "auto", mb: 3 }}>
-              <Table sx={{ minWidth: 950, borderRadius: 3, boxShadow: 2 }}>
+              <Table
+                sx={{
+                  minWidth: 950,
+                  borderRadius: 3,
+                  boxShadow: 1,
+                  overflow: "hidden",
+                }}
+              >
                 <TableHead>
                   <TableRow sx={{ background: "#e3eafc" }}>
-                    <TableCell
-                      align="center"
-                      sx={{ fontWeight: "bold", fontSize: 15 }}
-                    >
+                    <TableCell align="center" sx={{ fontWeight: "bold" }}>
                       Sân
                     </TableCell>
-                    <TableCell
-                      align="center"
-                      sx={{ fontWeight: "bold", fontSize: 15 }}
-                    >
+                    <TableCell align="center" sx={{ fontWeight: "bold" }}>
                       Khách hàng
                     </TableCell>
-                    <TableCell
-                      align="center"
-                      sx={{ fontWeight: "bold", fontSize: 15 }}
-                    >
+                    <TableCell align="center" sx={{ fontWeight: "bold" }}>
                       Thời gian
                     </TableCell>
-                    <TableCell
-                      align="center"
-                      sx={{ fontWeight: "bold", fontSize: 15 }}
-                    >
+                    <TableCell align="center" sx={{ fontWeight: "bold" }}>
                       Số giờ
                     </TableCell>
-                    <TableCell
-                      align="center"
-                      sx={{ fontWeight: "bold", fontSize: 15 }}
-                    >
+                    <TableCell align="center" sx={{ fontWeight: "bold" }}>
                       Chu kỳ (90 phút)
                     </TableCell>
-                    <TableCell
-                      align="center"
-                      sx={{ fontWeight: "bold", fontSize: 15 }}
-                    >
+                    <TableCell align="center" sx={{ fontWeight: "bold" }}>
                       Trạng thái
                     </TableCell>
-                    <TableCell
-                      align="center"
-                      sx={{ fontWeight: "bold", fontSize: 15 }}
-                    >
+                    <TableCell align="center" sx={{ fontWeight: "bold" }}>
                       Ghi chú
                     </TableCell>
                     <TableCell
                       align="center"
-                      sx={{
-                        fontWeight: "bold",
-                        fontSize: 15,
-                        color: "primary.main",
-                      }}
+                      sx={{ fontWeight: "bold", color: "primary.main" }}
                     >
                       Giá trị hóa đơn
                     </TableCell>
@@ -390,35 +412,32 @@ export default function Dashboard() {
                 </TableBody>
               </Table>
             </Box>
-            <Typography variant="h6" mt={4} mb={2} align="center">
-              Lịch sử đặt dịch vụ ngoài ngày {selectedDate}
+
+            {/* Dịch vụ ngoài */}
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1.5 }}>
+              Dịch vụ & tiện ích kèm theo
             </Typography>
-            <Box sx={{ overflowX: "auto", mb: 4 }}>
-              <Table sx={{ minWidth: 650, borderRadius: 3, boxShadow: 2 }}>
+            <Box sx={{ overflowX: "auto" }}>
+              <Table
+                sx={{
+                  minWidth: 650,
+                  borderRadius: 3,
+                  boxShadow: 1,
+                  overflow: "hidden",
+                }}
+              >
                 <TableHead>
                   <TableRow sx={{ background: "#f0f7fa" }}>
-                    <TableCell
-                      align="center"
-                      sx={{ fontWeight: "bold", fontSize: 15 }}
-                    >
+                    <TableCell align="center" sx={{ fontWeight: "bold" }}>
                       Loại dịch vụ
                     </TableCell>
-                    <TableCell
-                      align="center"
-                      sx={{ fontWeight: "bold", fontSize: 15 }}
-                    >
+                    <TableCell align="center" sx={{ fontWeight: "bold" }}>
                       Số lượng đặt
                     </TableCell>
-                    <TableCell
-                      align="center"
-                      sx={{ fontWeight: "bold", fontSize: 15 }}
-                    >
+                    <TableCell align="center" sx={{ fontWeight: "bold" }}>
                       Đơn giá
                     </TableCell>
-                    <TableCell
-                      align="center"
-                      sx={{ fontWeight: "bold", fontSize: 15 }}
-                    >
+                    <TableCell align="center" sx={{ fontWeight: "bold" }}>
                       Thành tiền
                     </TableCell>
                   </TableRow>
@@ -429,13 +448,13 @@ export default function Dashboard() {
                       <TableCell align="center">{order.name}</TableCell>
                       <TableCell align="center">{order.count}</TableCell>
                       <TableCell align="center">
-                        {order.price.toLocaleString("vi-VN")} VND
+                        {formatVND(order.price)}
                       </TableCell>
                       <TableCell
                         align="center"
                         sx={{ fontWeight: 600, color: "blue" }}
                       >
-                        {order.totalPrice.toLocaleString("vi-VN")} VND
+                        {formatVND(order.totalPrice)}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -452,7 +471,7 @@ export default function Dashboard() {
                       colSpan={3}
                       sx={{ fontWeight: "bold", fontSize: 16 }}
                     >
-                      Tổng chi dịch vụ ngoài
+                      Tổng doanh thu dịch vụ ngoài
                     </TableCell>
                     <TableCell
                       align="center"
@@ -466,7 +485,7 @@ export default function Dashboard() {
             </Box>
           </>
         )}
-      </Container>
+      </Box>
     </ManagerLayout>
   );
 }

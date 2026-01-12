@@ -16,7 +16,7 @@ import axiosClient from "../../api/axiosClient";
 import useAuth from "../../context/useAuth";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
-
+import logo from "../../assets/logo.jpg";
 export default function Register() {
   const [form, setForm] = useState({
     name: "",
@@ -95,11 +95,7 @@ export default function Register() {
     >
       <Paper elevation={3} sx={{ width: 400, p: 4 }}>
         <Box textAlign="center" mb={2}>
-          <img
-            alt="Logo"
-            src="/logo192.png"
-            style={{ width: 48, height: 48 }}
-          />
+          <img alt="Logo" src={logo} style={{ width: 200, height: 200 }} />
         </Box>
         <Typography variant="h5" fontWeight="bold" align="center" mb={1}>
           Create Your Account

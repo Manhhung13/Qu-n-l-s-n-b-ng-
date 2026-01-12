@@ -122,6 +122,10 @@ export default function Home() {
     });
     setOpenBooking(true);
   };
+  function formatVND(price) {
+    if (!price) return "0 VND";
+    return new Intl.NumberFormat("vi-VN").format(price) + " VND";
+  }
 
   // Giao diện phần Home
   return (
@@ -254,32 +258,86 @@ export default function Home() {
         ) : error ? (
           <Alert severity="error">{error}</Alert>
         ) : (
-          <Grid container spacing={3}>
+          <Grid container spacing={3} alignItems="stretch">
             {fields.map((field) => (
-              <Grid item xs={12} sm={6} md={4} key={field.id}>
-                <Card>
+              <Grid item xs={12} sm={6} md={4} lg={3} key={field.id}>
+                <Card
+                  sx={{
+                    height: 370, // tùy chỉnh nhưng nên cố định để các card ngang đều
+                    minWidth: 260, // ngăn card nhỏ quá trên màn lớn
+                    display: "flex",
+                    flexDirection: "column",
+                    borderRadius: 3,
+                    boxShadow: 2,
+                    transition: "transform 0.2s",
+                    "&:hover": { transform: "translateY(-5px)", boxShadow: 6 },
+                  }}
+                >
                   <CardMedia
                     component="img"
-                    height="150"
+                    height="140"
                     alt={field.name}
                     image={field.image_url || demoFieldImage}
+                    sx={{
+                      objectFit: "cover",
+                      borderRadius: "12px 12px 0 0",
+                    }}
                   />
-                  <CardContent>
+                  <CardContent
+                    sx={{
+                      flexGrow: 1,
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                  >
                     <Typography variant="h6" noWrap>
                       {field.name}
                     </Typography>
-                    <Typography color="text.secondary" noWrap>
+                    <Typography
+                      color="text.secondary"
+                      sx={{
+                        fontSize: 13,
+                        mb: 1,
+                        textOverflow: "ellipsis",
+                        overflow: "hidden",
+                      }}
+                      noWrap
+                    >
                       {field.location}
                     </Typography>
-                    <Box mt={1} mb={1}>
-                      {/* Trạng thái sân */}
+                    {/* Trạng thái sân */}
+                    <Box
+                      mt={0.5}
+                      mb={1}
+                      minHeight={38}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        justifyContent: "center",
+                      }}
+                    >
                       <Chip
                         label={field.status || "Không rõ trạng thái"}
                         color={statusColors[field.status] || defaultStatusColor}
                         size="small"
-                        sx={{ mr: 1 }}
+                        sx={{
+                          minWidth: 90,
+                          justifyContent: "center",
+                          borderRadius: 2,
+                          fontWeight: 500,
+                        }}
                       />
-                      <Chip label={field.type} color="info" size="small" />
+                      <Chip
+                        label={field.type}
+                        color="info"
+                        size="small"
+                        sx={{
+                          minWidth: 60,
+                          justifyContent: "center",
+                          borderRadius: 2,
+                        }}
+                      />
                       {field.status !== "sân đang bảo trì" && (
                         <Chip
                           label={
@@ -289,21 +347,40 @@ export default function Home() {
                           }
                           color={field.booked ? "warning" : "success"}
                           size="small"
-                          sx={{ ml: 1 }}
+                          sx={{
+                            minWidth: 110,
+                            justifyContent: "center",
+                            borderRadius: 2,
+                            backgroundColor: field.booked
+                              ? "#ffe082"
+                              : "#bbf7d0",
+                            color: field.booked ? "#8d6e63" : "#218838",
+                            fontWeight: 500,
+                            fontSize: 13,
+                          }}
                         />
                       )}
                     </Box>
                     <Typography
                       variant="subtitle1"
-                      sx={{ mb: 1, fontWeight: "bold" }}
+                      sx={{ mb: 1, fontWeight: "bold", minHeight: 28 }}
                     >
-                      {field.price?.toLocaleString("vi-VN")}đ / trận/90 phút
+                      {formatVND(field.price)} / trận/90 phút
                     </Typography>
+                    {/* Nút đặt sân luôn ở dưới đáy */}
+                    <Box sx={{ flexGrow: 1 }} />
                     <Button
                       fullWidth
                       variant="contained"
                       color="primary"
                       disabled={Boolean(field.booked)}
+                      sx={{
+                        mt: 1,
+                        borderRadius: 1.5,
+                        fontWeight: 700,
+                        fontSize: 15,
+                        letterSpacing: "0.5px",
+                      }}
                       onClick={() => handleOpenBooking(field)}
                     >
                       Đặt sân

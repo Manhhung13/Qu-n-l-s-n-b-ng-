@@ -1,9 +1,8 @@
 import React from "react";
-import { Box, Container, Toolbar, Paper } from "@mui/material";
+import { Box, Toolbar } from "@mui/material";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 
-// Icon material mẫu
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
 import PeopleIcon from "@mui/icons-material/People";
@@ -42,53 +41,32 @@ export default function ManagerLayout({
   return (
     <>
       <Header />
-      <Box sx={{ display: "flex", bgcolor: "#f7f7fa", minHeight: "100vh" }}>
+
+      <Box sx={{ display: "flex", bgcolor: "#f5f7fb", minHeight: "100vh" }}>
         {showSidebar && <Sidebar menuItems={sidebarMenu} mini />}
+
         <Box
+          component="main"
           sx={{
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
+            flexGrow: 1,
             ml: showSidebar ? `${drawerWidth}px` : 0,
             minHeight: "100vh",
             transition: "margin-left 0.3s",
-            bgcolor: "#f7f7fa",
           }}
         >
+          {/* chừa chỗ cho AppBar */}
           <Toolbar sx={{ minHeight: 64 }} />
-          <Container
-            maxWidth="lg"
-            disableGutters
+
+          {/* vùng content full width, chỉ chừa padding nhỏ */}
+          <Box
             sx={{
-              pt: 5,
-              pb: 4,
-              minHeight: "calc(100vh - 80px)",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              position: "relative",
+              width: "100%",
+              px: 3, // khoảng cách với sidebar
+              py: 3,
             }}
           >
-            {/* Paper nổi bật cho vùng content */}
-            <Paper
-              elevation={2}
-              sx={{
-                width: "100%",
-                maxWidth: 960,
-                minHeight: 360,
-                px: 4,
-                py: 4,
-                bgcolor: "#fff",
-                borderRadius: 3,
-                boxShadow: "0 2px 10px rgba(30,60,90,0.06)",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-              }}
-            >
-              {children}
-            </Paper>
-          </Container>
+            {children}
+          </Box>
         </Box>
       </Box>
     </>

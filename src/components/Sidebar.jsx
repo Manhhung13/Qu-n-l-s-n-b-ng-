@@ -10,13 +10,14 @@ import {
   Divider,
 } from "@mui/material";
 import HomeIcon from "@mui/icons-material/Home";
-import HistoryIcon from "@mui/icons-material/History";
+// Đổi HistoryIcon -> ArticleIcon (tin tức)
+import ArticleIcon from "@mui/icons-material/Article";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import { Link, useLocation } from "react-router-dom";
 
 const menu = [
   { label: "Trang chủ", icon: <HomeIcon />, path: "/home" },
-  { label: "Lịch sử", icon: <HistoryIcon />, path: "/history" },
+  { label: "Tin tức", icon: <ArticleIcon />, path: "/new_user" },
   { label: "Thông báo", icon: <NotificationsIcon />, path: "/notifications" },
 ];
 const drawerWidth = 88; // Mini variant (icon-only)
@@ -29,7 +30,7 @@ export default function Sidebar({ menuItems = menu }) {
       sx={{
         width: drawerWidth,
         flexShrink: 0,
-        [`& .MuiDrawer-paper`]: {
+        "& .MuiDrawer-paper": {
           width: drawerWidth,
           bgcolor: "#FAFAFB",
           borderRight: "1px solid #e0e0e0",
@@ -39,26 +40,6 @@ export default function Sidebar({ menuItems = menu }) {
       }}
     >
       <Toolbar />
-      {/* Logo hoặc avatar ở trên cùng */}
-      <Box sx={{ mt: 2, mb: 1, textAlign: "center" }}>
-        <Box
-          sx={{
-            width: 40,
-            height: 40,
-            mx: "auto",
-            borderRadius: "12px",
-            bgcolor: "#eee",
-            mb: 2,
-            lineHeight: "40px",
-            fontWeight: 800,
-            fontSize: 20,
-            color: "#127CFF",
-          }}
-        >
-          B
-        </Box>
-      </Box>
-      <Divider />
       <List sx={{ mt: 2 }}>
         {menuItems.map((item) => (
           <Tooltip title={item.label} placement="right" arrow key={item.path}>

@@ -17,6 +17,7 @@ import axiosClient from "../../api/axiosClient";
 import useAuth from "../../context/useAuth";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import logo from "../../assets/logo.jpg";
 export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
@@ -67,11 +68,7 @@ export default function Login() {
     >
       <Paper elevation={3} sx={{ width: 380, p: 4 }}>
         <Box textAlign="center" mb={2}>
-          <img
-            alt="Logo"
-            src="/logo192.png"
-            style={{ width: 48, height: 48 }}
-          />
+          <img alt="Logo" src={logo} style={{ width: 200, height: 200 }} />
         </Box>
         <Typography variant="h5" fontWeight="bold" textAlign="center" mb={1}>
           Hi, Welcome Back

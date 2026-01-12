@@ -6,28 +6,29 @@ import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 
 // User pages
-
-import History from "../pages/user/History";
-import Notifications from "../pages/user/Notifications";
+import Booking from "../pages/user/Booking.jsx";
+//import History from "../pages/user/History.jsx";
+import Notifications from "../pages/user/Notifications.jsx";
 // ĐÃ BỎ: import UserDashboard from "../pages/user/Dashboard";
-import Home from "../pages/user/Home";
+import New_User from "../pages/user/New_User.jsx";
+import Home from "../pages/user/Home.jsx";
 // Manager pages
-import ManagerDashboard from "../pages/manager/Dashboard";
-import Fields from "../pages/manager/Fields";
-import Customers from "../pages/manager/Customers";
-import CheckinCheckout from "../pages/manager/CheckinCheckout";
+import ManagerDashboard from "../pages/manager/Dashboard.jsx";
+import Fields from "../pages/manager/Fields.jsx";
+import Customers from "../pages/manager/Customers.jsx";
+import CheckinCheckout from "../pages/manager/CheckinCheckout.jsx";
 
 // Admin pages
-import AdminReports from "../pages/admin/Reports";
-import ManageStaff from "../pages/admin/ManageStaff";
-import Field from "../pages/admin/Fields";
-import AddField from "../pages/admin/Add_Field";
-import Service_Manager from "../pages/admin/Service_manager";
+import AdminReports from "../pages/admin/Reports.jsx";
+import ManageStaff from "../pages/admin/ManageStaff.jsx";
+import Field from "../pages/admin/Fields.jsx";
+import AddField from "../pages/admin/Add_Field.jsx";
+import Service_Manager from "../pages/admin/Service_manager.jsx";
 
 // Layouts
-import UserLayout from "../layouts/UserLayout";
-import ManagerLayout from "../layouts/ManagerLayout";
-import AdminLayout from "../layouts/AdminLayout";
+import UserLayout from "../layouts/UserLayout.jsx";
+import ManagerLayout from "../layouts/ManagerLayout.jsx";
+import AdminLayout from "../layouts/AdminLayout.jsx";
 
 export default function AppRouter() {
   return (
@@ -50,13 +51,23 @@ export default function AppRouter() {
             </PrivateRoute>
           }
         />
-
         <Route
-          path="/history"
+          path="/new_user"
           element={
             <PrivateRoute>
               <UserLayout>
-                <History />
+                <New_User />
+              </UserLayout>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/booking"
+          element={
+            <PrivateRoute>
+              <UserLayout>
+                <Booking />
               </UserLayout>
             </PrivateRoute>
           }

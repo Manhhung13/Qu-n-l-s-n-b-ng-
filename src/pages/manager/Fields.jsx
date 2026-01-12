@@ -148,8 +148,8 @@ export default function Fields() {
                         field.status === "Trống"
                           ? "success"
                           : field.status === "Đang sử dụng"
-                          ? "warning"
-                          : "error"
+                            ? "warning"
+                            : "error"
                       }
                       label={field.status}
                     />
