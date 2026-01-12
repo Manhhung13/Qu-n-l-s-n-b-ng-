@@ -64,11 +64,11 @@ const defaultStatusColor = "default";
 
 export default function Home() {
   const [fields, setFields] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [type, setType] = useState("");
-  const [status, setStatus] = useState(""); // Add status filter if muốn filter theo trạng thái
+  const [status, setStatus] = useState("");
   const [price, setPrice] = useState("");
   const [date, setDate] = useState("");
   const [startTime, setStartTime] = useState("");
@@ -77,6 +77,7 @@ export default function Home() {
   const [openBooking, setOpenBooking] = useState(false);
   const [bookingInfo, setBookingInfo] = useState(null);
 
+  // Kiểm tra giờ hợp lệ
   useEffect(() => {
     if (startTime && endTime && startTime >= endTime) {
       setTimeError(
@@ -85,146 +86,290 @@ export default function Home() {
     } else setTimeError("");
   }, [startTime, endTime]);
 
+  // Chỉ fetch khi đã chọn đủ date + giờ và không lỗi
   useEffect(() => {
-    if (startTime && endTime && startTime >= endTime) return;
+    if (!date || !startTime || !endTime || timeError) {
+      setFields([]);
+      return;
+    }
+
     const fetchFields = async () => {
       setLoading(true);
       setError("");
       try {
-        const params = {};
+        const params = {
+          date,
+          start_time: startTime,
+          end_time: endTime,
+        };
         if (type) params.type = type;
         if (status) params.status = status;
         if (price) params.price = price;
         if (search) params.q = search;
-        if (date) params.date = date;
-        if (startTime) params.start_time = startTime;
-        if (endTime) params.end_time = endTime;
+
         const res = await axiosClient.get("/fields", { params });
-        setFields(res.data); // Nếu API trả về `fields: [...]` thì setFields(res.data.fields)
+        setFields(res.data);
       } catch {
-        setError("Vui lòng nhập date, start_time và end_time để chọn sân!");
+        setError("Không thể tải danh sách sân. Hãy thử lại.");
+        setFields([]);
       }
       setLoading(false);
     };
+
     fetchFields();
-  }, [search, type, status, price, date, startTime, endTime]);
+  }, [date, startTime, endTime, search, type, status, price, timeError]);
 
   const handleOpenBooking = (field) => {
+    if (!date || !startTime || !endTime || timeError) {
+      setError(
+        "Vui lòng chọn ngày, giờ bắt đầu và giờ kết thúc hợp lệ trước khi đặt sân."
+      );
+      return;
+    }
+    setError("");
     setBookingInfo({
       field_id: field.id,
       field_name: field.name,
       location: field.location,
       type: field.type,
       price: field.price,
-      date: date,
+      date,
       start_time: startTime,
       end_time: endTime,
     });
     setOpenBooking(true);
   };
+
   function formatVND(price) {
     if (!price) return "0 VND";
     return new Intl.NumberFormat("vi-VN").format(price) + " VND";
   }
 
-  // Giao diện phần Home
   return (
     <UserLayout>
-      <Box sx={{ px: 2, py: 2 }}>
-        <Typography variant="h4" mb={3}>
-          Tìm Sân Bóng
-        </Typography>
-        {/* Bộ lọc */}
-        <Stack
-          direction={{ xs: "column", md: "row" }}
-          spacing={2}
-          mb={2}
-          alignItems="center"
+      {/* Wrapper chung: banner + filter + list đều căn theo maxWidth này */}
+      <Box
+        sx={{
+          width: "100%",
+          maxWidth: 1180,
+          mx: "auto",
+          pb: 6,
+        }}
+      >
+        {/* BANNER */}
+        <Box
+          sx={{
+            position: "relative",
+            height: 260,
+            overflow: "hidden",
+            borderRadius: 2,
+          }}
         >
-          <TextField
-            placeholder="Tìm theo tên sân, địa chỉ..."
-            variant="outlined"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
+          {/* Ảnh nền – không chặn click */}
+          <Box
+            sx={{
+              position: "absolute",
+              inset: 0,
+              backgroundImage:
+                "url(https://images.pexels.com/photos/399187/pexels-photo-399187.jpeg?auto=compress&cs=tinysrgb&w=1600), linear-gradient(135deg,#066839,#0b9b4c)",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              filter: "brightness(0.85)",
+              pointerEvents: "none",
             }}
-            sx={{ minWidth: 240 }}
           />
-          <FormControl sx={{ minWidth: 120 }}>
-            <InputLabel>Loại sân</InputLabel>
-            <Select
-              value={type}
-              label="Loại sân"
-              onChange={(e) => setType(e.target.value)}
+          {/* Lớp phủ – không chặn click */}
+          <Box
+            sx={{
+              position: "absolute",
+              inset: 0,
+              bgcolor: "rgba(0,0,0,0.35)",
+              pointerEvents: "none",
+            }}
+          />
+          {/* Nội dung chữ */}
+          <Box
+            sx={{
+              position: "relative",
+              zIndex: 1,
+              height: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              px: 2,
+              pointerEvents: "none",
+            }}
+          >
+            <Box
+              sx={{
+                width: "100%",
+                textAlign: "center",
+                color: "#fff",
+              }}
             >
-              {fieldTypes.map((opt) => (
-                <MenuItem value={opt.value} key={opt.value}>
-                  {opt.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <FormControl sx={{ minWidth: 120 }}>
-            <InputLabel>Giá</InputLabel>
-            <Select
-              value={price}
-              label="Giá"
-              onChange={(e) => setPrice(e.target.value)}
-            >
-              <MenuItem value="">Tất cả</MenuItem>
-              <MenuItem value="1">Dưới 300.000đ</MenuItem>
-              <MenuItem value="2">300.000đ - 500.000đ</MenuItem>
-              <MenuItem value="3">Trên 500.000đ</MenuItem>
-            </Select>
-          </FormControl>
+              <Typography
+                variant="h3"
+                sx={{
+                  fontWeight: 800,
+                  mb: 1,
+                  fontSize: { xs: 28, md: 36 },
+                  textShadow: "0 2px 6px rgba(0,0,0,0.45)",
+                }}
+              >
+                Tìm Sân Cháy{" "}
+                <Box component="span" sx={{ color: "#34ff85" }}>
+                  Đam Mê
+                </Box>
+              </Typography>
+              <Typography
+                variant="h3"
+                sx={{
+                  fontWeight: 800,
+                  mb: 2,
+                  fontSize: { xs: 24, md: 32 },
+                  textShadow: "0 2px 6px rgba(0,0,0,0.45)",
+                }}
+              >
+                Nâng Tầm Trận Đấu
+              </Typography>
+              <Typography
+                sx={{
+                  maxWidth: 600,
+                  mx: "auto",
+                  fontSize: 14,
+                  textShadow: "0 1px 3px rgba(0,0,0,0.4)",
+                }}
+              >
+                Đặt sân cỏ nhân tạo chất lượng cao, vị trí thuận tiện, giá tốt
+                và thanh toán linh hoạt.
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
 
-          <TextField
-            label="Ngày"
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-            sx={{ minWidth: 130 }}
-          />
-          <FormControl sx={{ minWidth: 120 }}>
-            <InputLabel>Giờ bắt đầu</InputLabel>
-            <Select
-              value={startTime}
-              label="Giờ bắt đầu"
-              onChange={(e) => setStartTime(e.target.value)}
+        {/* Card filter nổi trên banner, cùng chiều rộng với banner */}
+        <Box
+          sx={{
+            mt: -8,
+            position: "relative",
+            zIndex: 2,
+          }}
+        >
+          <Box
+            sx={{
+              bgcolor: "#fff",
+              borderRadius: 3,
+              boxShadow: "0 12px 40px rgba(15,23,42,0.18)",
+              p: 2.5,
+              mb: 3,
+            }}
+          >
+            <Stack
+              direction={{ xs: "column", md: "row" }}
+              spacing={2}
+              alignItems={{ xs: "stretch", md: "center" }}
             >
-              {slotOptions.map((slot) => (
-                <MenuItem key={slot} value={slot}>
-                  {slot}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <FormControl sx={{ minWidth: 120 }}>
-            <InputLabel>Giờ kết thúc</InputLabel>
-            <Select
-              value={endTime}
-              label="Giờ kết thúc"
-              onChange={(e) => setEndTime(e.target.value)}
-            >
-              {slotOptions.map((slot) => (
-                <MenuItem key={slot} value={slot}>
-                  {slot}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Stack>
-        {timeError && (
-          <Alert severity="warning" sx={{ mb: 2 }}>
-            {timeError}
-          </Alert>
-        )}
+              <TextField
+                placeholder="Tìm sân, quận, hoặc địa chỉ..."
+                variant="outlined"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{ flex: 2, minWidth: 220 }}
+              />
+
+              <FormControl sx={{ minWidth: 140 }}>
+                <InputLabel>Loại sân</InputLabel>
+                <Select
+                  value={type}
+                  label="Loại sân"
+                  onChange={(e) => setType(e.target.value)}
+                >
+                  {fieldTypes.map((opt) => (
+                    <MenuItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <TextField
+                label="Ngày"
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                sx={{ minWidth: 150 }}
+              />
+
+              <FormControl sx={{ minWidth: 130 }}>
+                <InputLabel>Giờ bắt đầu</InputLabel>
+                <Select
+                  value={startTime}
+                  label="Giờ bắt đầu"
+                  onChange={(e) => setStartTime(e.target.value)}
+                >
+                  {slotOptions.map((slot) => (
+                    <MenuItem key={slot} value={slot}>
+                      {slot}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <FormControl sx={{ minWidth: 130 }}>
+                <InputLabel>Giờ kết thúc</InputLabel>
+                <Select
+                  value={endTime}
+                  label="Giờ kết thúc"
+                  onChange={(e) => setEndTime(e.target.value)}
+                >
+                  {slotOptions.map((slot) => (
+                    <MenuItem key={slot} value={slot}>
+                      {slot}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <Button
+                variant="contained"
+                size="large"
+                sx={{
+                  bgcolor: "#00c853",
+                  px: 4,
+                  height: 48,
+                  "&:hover": { bgcolor: "#00b34a" },
+                }}
+              >
+                TÌM KIẾM
+              </Button>
+            </Stack>
+
+            {timeError && (
+              <Alert severity="warning" sx={{ mt: 2 }}>
+                {timeError}
+              </Alert>
+            )}
+            {error && !timeError && (
+              <Alert severity="error" sx={{ mt: 2 }}>
+                {error}
+              </Alert>
+            )}
+            {!date || !startTime || !endTime ? (
+              <Alert severity="info" sx={{ mt: 2 }}>
+                Vui lòng chọn ngày, giờ bắt đầu và giờ kết thúc để hiển thị danh
+                sách sân.
+              </Alert>
+            ) : null}
+          </Box>
+        </Box>
 
         {/* Popup booking */}
         <Dialog
@@ -250,32 +395,33 @@ export default function Home() {
           </DialogContent>
         </Dialog>
 
-        {/* Hiển thị danh sách sân bóng với trạng thái */}
+        {/* Danh sách sân bóng – nằm trong cùng wrapper, nên ngang với banner */}
         {loading ? (
           <Box mt={6} textAlign="center">
             <CircularProgress />
           </Box>
-        ) : error ? (
-          <Alert severity="error">{error}</Alert>
         ) : (
           <Grid container spacing={3} alignItems="stretch">
             {fields.map((field) => (
               <Grid item xs={12} sm={6} md={4} lg={3} key={field.id}>
                 <Card
                   sx={{
-                    height: 370, // tùy chỉnh nhưng nên cố định để các card ngang đều
-                    minWidth: 260, // ngăn card nhỏ quá trên màn lớn
+                    height: 370,
+                    minWidth: 260,
                     display: "flex",
                     flexDirection: "column",
                     borderRadius: 3,
                     boxShadow: 2,
-                    transition: "transform 0.2s",
-                    "&:hover": { transform: "translateY(-5px)", boxShadow: 6 },
+                    transition: "transform 0.2s, box-shadow 0.2s",
+                    "&:hover": {
+                      transform: "translateY(-6px)",
+                      boxShadow: 6,
+                    },
                   }}
                 >
                   <CardMedia
                     component="img"
-                    height="140"
+                    height="150"
                     alt={field.name}
                     image={field.image_url || demoFieldImage}
                     sx={{
@@ -288,6 +434,7 @@ export default function Home() {
                       flexGrow: 1,
                       display: "flex",
                       flexDirection: "column",
+                      pt: 1.5,
                     }}
                   >
                     <Typography variant="h6" noWrap>
@@ -305,7 +452,7 @@ export default function Home() {
                     >
                       {field.location}
                     </Typography>
-                    {/* Trạng thái sân */}
+
                     <Box
                       mt={0.5}
                       mb={1}
@@ -361,14 +508,16 @@ export default function Home() {
                         />
                       )}
                     </Box>
+
                     <Typography
                       variant="subtitle1"
                       sx={{ mb: 1, fontWeight: "bold", minHeight: 28 }}
                     >
                       {formatVND(field.price)} / trận/90 phút
                     </Typography>
-                    {/* Nút đặt sân luôn ở dưới đáy */}
+
                     <Box sx={{ flexGrow: 1 }} />
+
                     <Button
                       fullWidth
                       variant="contained"
@@ -389,11 +538,16 @@ export default function Home() {
                 </Card>
               </Grid>
             ))}
-            {!fields.length && (
-              <Grid item xs={12}>
-                <Alert severity="info">Không có sân phù hợp</Alert>
-              </Grid>
-            )}
+            {!fields.length &&
+              date &&
+              startTime &&
+              endTime &&
+              !loading &&
+              !error && (
+                <Grid item xs={12}>
+                  <Alert severity="info">Không có sân phù hợp</Alert>
+                </Grid>
+              )}
           </Grid>
         )}
       </Box>

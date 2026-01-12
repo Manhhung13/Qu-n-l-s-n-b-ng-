@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Container, Toolbar } from "@mui/material";
+import { Box, Toolbar } from "@mui/material";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 
@@ -12,36 +12,63 @@ export default function UserLayout({
 }) {
   return (
     <>
+      {/* Header cố định trên cùng */}
       <Header />
-      <Box sx={{ display: "flex", bgcolor: "#f6f7f9", minHeight: "100vh" }}>
-        {showSidebar && <Sidebar menuItems={sidebarMenu} />}
+
+      <Box
+        sx={{
+          display: "flex",
+          bgcolor: "#f6f7f9",
+          minHeight: "100vh",
+        }}
+      >
+        {/* Sidebar bên trái với width cố định */}
+        {showSidebar && (
+          <Box
+            sx={{
+              width: drawerWidth,
+              flexShrink: 0,
+              bgcolor: "#ffffff",
+              borderRight: "1px solid #e0e0e0",
+            }}
+          >
+            <Sidebar menuItems={sidebarMenu} />
+          </Box>
+        )}
+
+        {/* Phần nội dung chính */}
         <Box
           sx={{
             flex: 1,
             display: "flex",
             flexDirection: "column",
-            ml: showSidebar ? `${drawerWidth}px` : 0,
             minHeight: "100vh",
             bgcolor: "#f6f7f9",
           }}
         >
-          {/* Để header không che phần nội dung */}
+          {/* chừa khoảng cho Header */}
           <Toolbar sx={{ minHeight: 64 }} />
-          <Container
-            maxWidth="lg"
-            disableGutters
+
+          {/* Khung nội dung căn giữa, cùng maxWidth với Home */}
+          <Box
             sx={{
-              px: { xs: 2, md: 5 },
-              py: 4,
+              flex: 1,
+              width: "100%",
               display: "flex",
-              flexDirection: "column",
-              alignItems: "flex-start",
-              minHeight: "80vh",
-              margin: "0 auto",
+              justifyContent: "center",
+              pb: 4,
+              px: { xs: 1, md: 2 }, // padding ngoài nhẹ, không quá rộng
             }}
           >
-            {children}
-          </Container>
+            <Box
+              sx={{
+                width: "100%",
+                maxWidth: 1180, // cùng số với Home, Dashboard
+              }}
+            >
+              {children}
+            </Box>
+          </Box>
         </Box>
       </Box>
     </>
