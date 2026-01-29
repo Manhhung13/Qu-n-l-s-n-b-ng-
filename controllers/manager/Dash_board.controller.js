@@ -69,7 +69,7 @@ exports.getStatsToday = async (req, res) => {
         SUM(
             GREATEST(
                 ROUND(TIMESTAMPDIFF(MINUTE, b.start_time, b.end_time) / 90), 1
-            ) * f.price
+            ) *f.price
         ), 
         0
     ) AS fieldRevenue
@@ -123,13 +123,13 @@ exports.getServiceOrdersByDate = async (req, res) => {
        WHERE b.date = ?
        GROUP BY bs.service_id
        ORDER BY s.name ASC`,
-      [date],
+      [date]
     );
 
     // Tính tổng giá trị các dịch vụ ngoài trong ngày
     const total = rows.reduce(
       (acc, row) => acc + parseFloat(row.totalPrice || 0),
-      0,
+      0
     );
     // console.log("total:", total);
     res.json({

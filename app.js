@@ -14,7 +14,10 @@ const Staff_Manager = require("./routes/admin/Staff_Manager");
 const Service_Manager = require("./routes/admin/Service_Manager");
 const get_services = require("./routes/manager/get_services");
 const dashboard_admin = require("./routes/admin/Dashboard");
+const costumersRoutes = require("./routes/manager/customers");
+const get_fields = require("./routes/manager/getfields");
 const auth = require("./middlewares/auth");
+const footballRoutes = require("./routes/user/football");
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
@@ -22,6 +25,7 @@ app.use("/users", usersRoutes);
 app.use(auth);
 
 // Gắn các route
+app.use("/user/football", footballRoutes);
 app.use("/manager/dashboard", roleAuth("manager"), manager_Dashboard);
 app.use("/fields", roleAuth("user"), fieldsRoutes);
 app.use("/bookings", roleAuth("user"), bookingsRoutes);
@@ -32,6 +36,8 @@ app.use("/admin/staffs", roleAuth("admin"), Staff_Manager);
 app.use("/admin/services", roleAuth("admin"), Service_Manager);
 app.use("/manager/services", roleAuth("manager"), get_services);
 app.use("/admin/dashboard", roleAuth("admin"), dashboard_admin);
+app.use("/manager/customers", roleAuth("manager"), costumersRoutes);
+app.use("/manager/fields", roleAuth("manager"), get_fields);
 app.get("/", (req, res) => {
   res.send("Server API đang chạy!");
 });

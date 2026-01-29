@@ -2,6 +2,9 @@ const nodemailer = require("nodemailer");
 const db = require("../../db");
 const tk_email = process.env.tk_email;
 const mk_email = process.env.mk_email;
+const hotline = process.env.hotline;
+
+// Check-in: cập nhật trạng thái booking "Đã xác nhận", gửi email & notification cho user
 exports.checkinBooking = async (req, res) => {
   const bookingId = req.params.id;
 
@@ -13,17 +16,33 @@ exports.checkinBooking = async (req, res) => {
       WHERE id = ?
     `;
     await db.execute(updateBookingSQL, [bookingId]);
+    function getBookingSlotPrice(startTime, endTime, fieldPrice) {
+      // startTime, endTime: "HH:mm", fieldPrice: số tiền mỗi slot (90 phút)
+      const [sh, sm] = startTime.split(":").map(Number);
+      const [eh, em] = endTime.split(":").map(Number);
+      const start = sh * 60 + sm;
+      const end = eh * 60 + em;
+      const minutes = end - start;
+      // Làm tròn lên số slot 90 phút
+      const slotCount = Math.max(Math.round(minutes / 90), 1);
+      return slotCount * fieldPrice;
+    }
 
     // 3. Lấy thông tin booking & user/sân để thông báo
     const [bookingRows] = await db.execute(
-      `SELECT b.*, u.email, u.name as userName, f.name as fieldName
-      FROM bookings b
-      JOIN users u ON b.user_id = u.id
-      JOIN fields f ON b.field_id = f.id
-      WHERE b.id = ?`,
-      [bookingId],
+      `SELECT b.*, b.email, u.name as userName, f.name as fieldName, f.price as fieldPrice
+   FROM bookings b
+   JOIN users u ON b.user_id = u.id
+   JOIN fields f ON b.field_id = f.id
+   WHERE b.id = ?`,
+      [bookingId]
     );
     const booking = bookingRows[0];
+    const totalPrice = getBookingSlotPrice(
+      booking.start_time,
+      booking.end_time,
+      booking.fieldPrice
+    );
 
     // 4. Gửi notification vào bảng notifications
     function formatDateVN(isoDateStr) {
@@ -42,20 +61,27 @@ exports.checkinBooking = async (req, res) => {
     }
 
     // Dùng trong nội dung thông báo:
-    console.log("booking.date:", booking.date);
-    const dateString =
-      booking.date instanceof Date
-        ? booking.date.toISOString().slice(0, 10)
-        : String(booking.date);
+    //  console.log("booking.date:", booking.date);
+    let dateString;
+    if (booking.date instanceof Date) {
+      // Lấy năm-tháng-ngày theo giờ local Việt Nam
+      const year = booking.date.getFullYear();
+      const month = (booking.date.getMonth() + 1).toString().padStart(2, "0");
+      const day = booking.date.getDate().toString().padStart(2, "0");
+      dateString = `${year}-${month}-${day}`;
+    } else {
+      dateString = String(booking.date);
+    }
     const ngayVN = formatDateVN(dateString);
-    const notificationContent = `Bạn đã đặt thành công sân ${booking.fieldName} vào ngày ${ngayVN} khung giờ ${booking.start_time} - ${booking.end_time}`;
+
+    const notificationContent = `Bạn đã đặt thành công  ${booking.fieldName} vào ngày ${ngayVN} khung giờ ${booking.start_time} - ${booking.end_time}`;
 
     await db.execute(
       "INSERT INTO notifications (user_id, content, type, is_read, created_at, status) VALUES (?, ?, ?, 0, NOW(), ?)",
-      [booking.user_id, notificationContent, "xac nhan", "chưa xác nhận"],
+      [booking.user_id, notificationContent, "xac nhan", "chưa xác nhận"]
     );
-    console.log("MAIL_USER:", process.env.tk_email);
-    console.log("MAIL_PASS:", process.env.mk_email);
+    // console.log("MAIL_USER:", process.env.tk_email);
+    //console.log("MAIL_PASS:", process.env.mk_email);
 
     // 5. Gửi email cho user
     const transporter = nodemailer.createTransport({
@@ -65,17 +91,28 @@ exports.checkinBooking = async (req, res) => {
         pass: mk_email,
       },
     });
-
+    console.log("tài khoản đến ", booking.email);
     const mailOptions = {
       from: tk_email,
       to: booking.email,
       subject: "Xác nhận đặt sân thành công",
       html: `
-        <h3>Đặt sân thành công!</h3>
-        <p>Xin chào ${booking.userName},</p>
-        <p>Bạn đã đặt thành công sân <b>${booking.fieldName}</b> vào ngày <b>${booking.date}</b> khung giờ <b>${booking.start_time} - ${booking.end_time}</b>.</p>
-        <p>Chúng tôi sẽ hỗ trợ bạn tốt nhất khi đến sân!</p>
-      `,
+    <div style="font-family: Arial,sans-serif; background: #f7f7f7; padding: 20px; border-radius: 8px; max-width: 500px; margin: auto;">
+      <div style="text-align:center;">
+        <img src="https://www.sporta.vn/assets/tng_review-6d1119a94bbfe3e0a736554e2067e97cd1b1ed209f7d729a4269b79106606c7d.png" alt="Logo Sân Bóng" style="width:100px; margin-bottom:16px;" />
+      </div>
+      <h2 style="color: #1e90ff;">Đặt sân thành công!</h2>
+      <p>Kính gửi <b>${booking.userName}</b>, bạn đã đặt sân thành công tại <b>${booking.fieldName}</b>.</p>
+      <ul style="list-style:none; padding-left:0;">
+        <li><b>Thời gian:</b> ${ngayVN} ${booking.start_time} - ${booking.end_time}</li>
+        <li><b>Sân:</b> ${booking.fieldName}</li>
+        <li><b>Tổng số tiền:</b> ${totalPrice.toLocaleString()} vnđ</li>
+        <li>Xin vui lòng đến trước <b>10 phút</b> để chuẩn bị.</li>
+        <li>Mọi thắc mắc xin liên hệ <b>${process.env.hotline || "[Hotline]"}</b>.</li>
+      </ul>
+      <p style="color: #38b000;">Cảm ơn bạn đã tin tưởng dịch vụ của chúng tôi!</p>
+    </div>
+  `,
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
@@ -109,7 +146,7 @@ exports.checkoutBooking = async (req, res) => {
       for (const item of services) {
         await db.execute(
           "INSERT INTO booking_services (booking_id, service_id, quantity) VALUES (?, ?, ?)",
-          [bookingId, item.serviceId, item.quantity],
+          [bookingId, item.serviceId, item.quantity]
         );
       }
     }

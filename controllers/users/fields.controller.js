@@ -41,7 +41,7 @@ exports.getFields = async (req, res) => {
            AND b.date = ?
            AND b.start_time < TIME(?)
            AND b.end_time > TIME(?)
-           AND b.status IN ('Đã đặt', 'Đã xác nhận')
+           AND b.status IN ('Đã đặt', 'Đã xác nhận','Chờ xác nhận')
   )
            Or f.status <> 'sân hoạt động bình thường' ) AS booked
   FROM fields f
