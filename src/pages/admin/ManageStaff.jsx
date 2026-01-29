@@ -22,6 +22,9 @@ import {
   Grid,
   Paper,
   Box,
+  Avatar,
+  Stack,
+  Divider,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import EditIcon from "@mui/icons-material/Edit";
@@ -110,112 +113,318 @@ export default function ManageStaff() {
     }
   };
 
+  const workingCount = staffs.length;
+  const onLeaveCount = 0;
+  const newRecruitCount = 0;
+
   return (
     <AdminLayout>
       <Container
-        maxWidth="lg"
-        sx={{ mt: 5, mb: 4, minHeight: "calc(100vh - 120px)" }}
+        maxWidth={false}
+        sx={{
+          mt: 4,
+          mb: 4,
+          minHeight: "calc(100vh - 120px)",
+          px: 4,
+          bgcolor: "#f3f4f6",
+        }}
       >
         <Box
           sx={{
             mx: "auto",
             bgcolor: "background.paper",
             borderRadius: 5,
-            boxShadow: 4,
+            boxShadow: 3,
             py: 4,
-            px: { xs: 2, md: 5 },
-            maxWidth: 780,
+            px: { xs: 2, md: 4 },
+            maxWidth: 1100,
+            width: "100%",
           }}
         >
-          <Typography
-            variant={xsDown ? "h5" : "h4"}
-            align="center"
+          {/* Header + nút thêm */}
+          <Box
             mb={3}
-            fontWeight={700}
+            display="flex"
+            alignItems="center"
+            justifyContent="space-between"
           >
-            Quản lý nhân sự
-          </Typography>
-          <Box display="flex" justifyContent="flex-end" mb={2}>
+            <Box>
+              <Typography variant={xsDown ? "h5" : "h4"} fontWeight={700}>
+                Quản lý nhân sự
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {staffs.length} nhân viên đang hoạt động trong hệ thống
+              </Typography>
+            </Box>
             <Button
               variant="contained"
               onClick={() => handleOpenDialog()}
               size={mdDown ? "small" : "medium"}
               sx={{
-                borderRadius: 3,
-                fontWeight: 500,
-                boxShadow: 1,
+                borderRadius: 999,
+                fontWeight: 600,
                 px: 3,
                 py: 1,
+                bgcolor: "#22c55e",
+                "&:hover": { bgcolor: "#16a34a" },
               }}
             >
-              Thêm nhân viên
+              + Thêm nhân viên
             </Button>
           </Box>
-          {loading ? (
-            <Box
-              display="flex"
-              justifyContent="center"
-              alignItems="center"
-              minHeight={180}
-            >
-              <CircularProgress />
-            </Box>
-          ) : error ? (
-            <Alert severity="error">{error}</Alert>
-          ) : (
-            <Box sx={{ overflowX: "auto" }}>
-              <Table size={xsDown ? "small" : "medium"}>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Họ tên</TableCell>
-                    <TableCell>Email</TableCell>
-                    <TableCell>Điện thoại</TableCell>
-                    <TableCell>Phân quyền</TableCell>
-                    <TableCell align="center">Thao tác</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {staffs.map((staff) => (
-                    <TableRow key={staff.id}>
-                      <TableCell>{staff.name}</TableCell>
-                      <TableCell>{staff.email}</TableCell>
-                      <TableCell>{staff.phone}</TableCell>
-                      <TableCell>
-                        <Chip
-                          label={staff.role === "admin" ? "Admin" : "Nhân viên"}
-                          color={staff.role === "admin" ? "warning" : "primary"}
-                          size="small"
-                          sx={{
-                            fontWeight: 500,
-                            fontSize: 14,
-                            borderRadius: 1,
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell align="center">
-                        <IconButton
-                          onClick={() => handleOpenDialog(staff)}
-                          color="primary"
-                          size={xsDown ? "small" : "medium"}
-                          aria-label="edit"
-                        >
-                          <EditIcon />
-                        </IconButton>
-                        <IconButton
-                          onClick={() => handleDelete(staff.id)}
-                          color="error"
-                          size={xsDown ? "small" : "medium"}
-                          aria-label="delete"
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </Box>
-          )}
+
+          {/* Ô tìm kiếm UI */}
+          <Paper
+            sx={{
+              mb: 2,
+              p: 1.5,
+              borderRadius: 3,
+              display: "flex",
+              alignItems: "center",
+              gap: 2,
+            }}
+          >
+            <TextField
+              size="small"
+              placeholder="Tìm kiếm theo tên, email hoặc số điện thoại..."
+              fullWidth
+            />
+          </Paper>
+
+          {/* Bảng nhân sự */}
+          <Paper
+            sx={{
+              borderRadius: 3,
+              boxShadow: 3,
+              overflow: "hidden",
+            }}
+          >
+            {loading ? (
+              <Box
+                display="flex"
+                justifyContent="center"
+                alignItems="center"
+                minHeight={200}
+              >
+                <CircularProgress />
+              </Box>
+            ) : error ? (
+              <Box p={2}>
+                <Alert severity="error">{error}</Alert>
+              </Box>
+            ) : (
+              <>
+                <Box
+                  px={3}
+                  py={2}
+                  borderBottom="1px solid #e5e7eb"
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Danh sách nhân viên
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Hiển thị {staffs.length} nhân viên
+                  </Typography>
+                </Box>
+                <Box sx={{ overflowX: "auto" }}>
+                  <Table size={xsDown ? "small" : "medium"}>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Họ tên &amp; Email</TableCell>
+                        <TableCell>Vai trò</TableCell>
+                        <TableCell>Số điện thoại</TableCell>
+                        <TableCell align="center">Thao tác</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {staffs.map((staff) => (
+                        <TableRow key={staff.id} hover>
+                          <TableCell>
+                            <Stack
+                              direction="row"
+                              spacing={1.5}
+                              alignItems="center"
+                            >
+                              <Avatar sx={{ bgcolor: "#22c55e" }}>
+                                {staff.name?.charAt(0).toUpperCase()}
+                              </Avatar>
+                              <Box>
+                                <Typography fontWeight={600}>
+                                  {staff.name}
+                                </Typography>
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                  noWrap
+                                  sx={{ maxWidth: 200 }}
+                                >
+                                  {staff.email}
+                                </Typography>
+                              </Box>
+                            </Stack>
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={
+                                staff.role === "admin" ? "ADMIN" : "MANAGER"
+                              }
+                              color={
+                                staff.role === "admin" ? "warning" : "default"
+                              }
+                              size="small"
+                              sx={{
+                                fontWeight: 600,
+                                fontSize: 12,
+                                borderRadius: 999,
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell>{staff.phone}</TableCell>
+                          <TableCell align="center">
+                            <IconButton
+                              onClick={() => handleOpenDialog(staff)}
+                              color="primary"
+                              size={xsDown ? "small" : "medium"}
+                              aria-label="edit"
+                            >
+                              <EditIcon />
+                            </IconButton>
+                            <IconButton
+                              onClick={() => handleDelete(staff.id)}
+                              color="error"
+                              size={xsDown ? "small" : "medium"}
+                              aria-label="delete"
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {staffs.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={4} align="center">
+                            Chưa có nhân viên nào.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </Box>
+              </>
+            )}
+          </Paper>
+
+          {/* Thống kê nhỏ phía dưới */}
+          <Grid container spacing={2} mt={3}>
+            <Grid item xs={12} md={4}>
+              <Paper
+                sx={{
+                  p: 2,
+                  borderRadius: 3,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 999,
+                    bgcolor: "#dcfce7",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#16a34a",
+                    fontWeight: 700,
+                  }}
+                >
+                  ✔
+                </Box>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">
+                    Đang làm việc
+                  </Typography>
+                  <Typography variant="h6" fontWeight={700}>
+                    {workingCount}
+                  </Typography>
+                </Box>
+              </Paper>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Paper
+                sx={{
+                  p: 2,
+                  borderRadius: 3,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 999,
+                    bgcolor: "#fee2e2",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#dc2626",
+                    fontWeight: 700,
+                  }}
+                >
+                  ☕
+                </Box>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">
+                    Đang nghỉ phép
+                  </Typography>
+                  <Typography variant="h6" fontWeight={700}>
+                    {onLeaveCount}
+                  </Typography>
+                </Box>
+              </Paper>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Paper
+                sx={{
+                  p: 2,
+                  borderRadius: 3,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 999,
+                    bgcolor: "#e0f2fe",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#0284c7",
+                    fontWeight: 700,
+                  }}
+                >
+                  ✨
+                </Box>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">
+                    Tuyển dụng mới
+                  </Typography>
+                  <Typography variant="h6" fontWeight={700}>
+                    {newRecruitCount}
+                  </Typography>
+                </Box>
+              </Paper>
+            </Grid>
+          </Grid>
 
           {/* Dialog thêm / sửa nhân viên */}
           <Dialog
@@ -223,12 +432,32 @@ export default function ManageStaff() {
             onClose={handleCloseDialog}
             maxWidth="sm"
             fullWidth
+            PaperProps={{
+              sx: {
+                borderRadius: 3,
+                overflow: "hidden",
+              },
+            }}
           >
             <form onSubmit={handleSubmit}>
-              <DialogTitle sx={{ textAlign: "center", fontWeight: 600 }}>
+              <DialogTitle
+                sx={{
+                  textAlign: "center",
+                  fontWeight: 700,
+                  pb: 1,
+                }}
+              >
                 {editingStaff ? "Cập nhật nhân viên" : "Thêm nhân viên"}
               </DialogTitle>
-              <DialogContent sx={{ mt: 1 }}>
+              <DialogContent sx={{ mt: 1, pb: 1 }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ display: "block", mb: 1 }}
+                >
+                  Cập nhật thông tin hồ sơ và quyền truy cập hệ thống.
+                </Typography>
+                <Divider sx={{ mb: 2 }} />
                 <Grid container spacing={2}>
                   <Grid item xs={12} md={6}>
                     <TextField
@@ -291,23 +520,43 @@ export default function ManageStaff() {
                       }
                       placeholder={editingStaff ? "Để trống nếu không đổi" : ""}
                     />
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ mt: 0.5, display: "block" }}
+                    >
+                      Nên dùng mật khẩu tối thiểu 8 ký tự, bao gồm chữ và số.
+                    </Typography>
                   </Grid>
                 </Grid>
               </DialogContent>
-              <DialogActions sx={{ px: 3, pb: 2, justifyContent: "center" }}>
+              <DialogActions
+                sx={{
+                  px: 3,
+                  pb: 2,
+                  pt: 1,
+                  justifyContent: "space-between",
+                  bgcolor: "#f9fafb",
+                }}
+              >
                 <Button
                   onClick={handleCloseDialog}
-                  variant="outlined"
+                  variant="text"
                   sx={{ borderRadius: 2 }}
                 >
-                  Hủy
+                  Hủy thay đổi
                 </Button>
                 <Button
                   type="submit"
                   variant="contained"
-                  sx={{ borderRadius: 2 }}
+                  sx={{
+                    borderRadius: 999,
+                    px: 3,
+                    bgcolor: "#22c55e",
+                    "&:hover": { bgcolor: "#16a34a" },
+                  }}
                 >
-                  Lưu
+                  Lưu nhân viên
                 </Button>
               </DialogActions>
             </form>

@@ -19,16 +19,17 @@ import {
   CircularProgress,
   Box,
   IconButton,
+  Chip,
 } from "@mui/material";
-import { Edit, Delete, Sync } from "@mui/icons-material";
+import { Delete, Sync, Add } from "@mui/icons-material";
 import axiosClient from "../../api/axiosClient";
 
 const typeOptions = ["5vs5", "7vs7", "11vs11"];
 const statusOptions = [
-  { value: "Sân hoạt động bình thường", color: "green" },
-  { value: "Đã đặt", color: "blue" },
-  { value: "Bảo trì", color: "orange" },
-  { value: "Đang sử dụng", color: "gray" },
+  { value: "Sân hoạt động bình thường", color: "#22c55e", label: "HOẠT ĐỘNG" },
+  { value: "Đã đặt", color: "#3b82f6", label: "ĐÃ ĐẶT" },
+  { value: "Bảo trì", color: "#f97316", label: "BẢO TRÌ" },
+  { value: "Đang sử dụng", color: "#6b7280", label: "ĐANG SỬ DỤNG" },
 ];
 
 export default function FieldManager() {
@@ -85,22 +86,122 @@ export default function FieldManager() {
     }
   };
 
+  const totalFields = fields.length;
+  const activeFields = fields.filter(
+    (f) => f.status === "Sân hoạt động bình thường"
+  ).length;
+  const maintenanceFields = fields.filter((f) => f.status === "Bảo trì").length;
+  const bookedFields = fields.filter((f) => f.status === "Đã đặt").length;
+
   return (
-    <Container sx={{ mt: 6 }}>
-      <Typography
-        variant="h4"
-        align="center"
-        gutterBottom
-        color="primary"
-        fontWeight="bold"
+    <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
+      {/* Header + ô search đơn giản */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 3,
+        }}
       >
-        Quản Lý Sân Bóng
-      </Typography>
-      <Box display="flex" justifyContent="center" mb={3}>
-        <Button variant="contained" size="large" href="/admin/addfield">
-          + Thêm Sân Mới
+        <Box>
+          <Typography variant="h5" fontWeight={700}>
+            Field Dashboard
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Quản lý tình trạng và thông tin các sân bóng.
+          </Typography>
+        </Box>
+        <Button
+          variant="contained"
+          color="success"
+          startIcon={<Add />}
+          href="/admin/addfield"
+          sx={{ borderRadius: 999, px: 3 }}
+        >
+          Thêm sân mới
         </Button>
       </Box>
+
+      {/* Cards thống kê trên cùng */}
+      <Grid container spacing={2} mb={3}>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card
+            sx={{
+              borderRadius: 3,
+              boxShadow: 0,
+              bgcolor: "#ffffff",
+              border: "1px solid #e5e7eb",
+            }}
+          >
+            <CardContent>
+              <Typography variant="caption" color="text.secondary">
+                TỔNG SỐ SÂN
+              </Typography>
+              <Typography variant="h4" fontWeight={700} mt={1}>
+                {totalFields}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card
+            sx={{
+              borderRadius: 3,
+              boxShadow: 0,
+              bgcolor: "#ffffff",
+              border: "1px solid #e5e7eb",
+            }}
+          >
+            <CardContent>
+              <Typography variant="caption" color="text.secondary">
+                ĐANG HOẠT ĐỘNG
+              </Typography>
+              <Typography variant="h4" fontWeight={700} mt={1}>
+                {activeFields}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card
+            sx={{
+              borderRadius: 3,
+              boxShadow: 0,
+              bgcolor: "#ffffff",
+              border: "1px solid #e5e7eb",
+            }}
+          >
+            <CardContent>
+              <Typography variant="caption" color="text.secondary">
+                BẢO TRÌ
+              </Typography>
+              <Typography variant="h4" fontWeight={700} mt={1}>
+                {maintenanceFields}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card
+            sx={{
+              borderRadius: 3,
+              boxShadow: 0,
+              bgcolor: "#ffffff",
+              border: "1px solid #e5e7eb",
+            }}
+          >
+            <CardContent>
+              <Typography variant="caption" color="text.secondary">
+                ĐÃ ĐẶT
+              </Typography>
+              <Typography variant="h4" fontWeight={700} mt={1}>
+                {bookedFields}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
 
       {loading ? (
         <Box display="flex" justifyContent="center" my={4}>
@@ -111,46 +212,90 @@ export default function FieldManager() {
           {error}
         </Alert>
       ) : (
-        <Grid container spacing={3}>
+        <Grid container spacing={2}>
           {fields.map((field) => {
-            const status = statusOptions.find((s) => s.value === field.status);
+            const statusMeta = statusOptions.find(
+              (s) => s.value === field.status
+            );
             return (
-              <Grid key={field.id} item xs={12} sm={6} md={4}>
+              <Grid key={field.id} item xs={12} sm={6} md={4} lg={3}>
                 <Card
-                  sx={{ boxShadow: 4, borderRadius: 3, bgcolor: "#f9f9f9" }}
+                  sx={{
+                    borderRadius: 3,
+                    boxShadow: 0,
+                    border: "1px solid #e5e7eb",
+                    bgcolor: "#f9fafb",
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
                 >
-                  <CardContent>
-                    <Typography variant="h6" fontWeight="bold" gutterBottom>
-                      {field.name}
+                  <CardContent sx={{ pb: 1 }}>
+                    {/* Header sân + status chip */}
+                    <Box
+                      display="flex"
+                      justifyContent="space-between"
+                      alignItems="center"
+                      mb={1}
+                    >
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight={700}
+                        sx={{ maxWidth: "70%" }}
+                        noWrap
+                      >
+                        {field.name}
+                      </Typography>
+                      {statusMeta && (
+                        <Chip
+                          label={statusMeta.label}
+                          size="small"
+                          sx={{
+                            bgcolor: `${statusMeta.color}1a`,
+                            color: statusMeta.color,
+                            fontWeight: 600,
+                          }}
+                        />
+                      )}
+                    </Box>
+                    <Typography variant="body2" color="text.secondary">
+                      Loại:{" "}
+                      {typeOptions.includes(field.type)
+                        ? field.type
+                        : field.type}
                     </Typography>
-                    <Typography variant="subtitle2">
-                      Loại sân: {field.type}
-                    </Typography>
-                    <Typography variant="subtitle2">
-                      Địa chỉ: {field.location}
-                    </Typography>
-                    <Typography variant="subtitle1" gutterBottom>
-                      Giá: {Number(field.price).toLocaleString("vi-VN")} VND
+                    <Typography variant="body2" color="text.secondary">
+                      Khu vực: {field.location}
                     </Typography>
                     <Typography
-                      variant="body2"
-                      sx={{
-                        fontWeight: "bold",
-                        color: status?.color || "black",
-                      }}
+                      variant="body1"
+                      fontWeight={700}
+                      mt={1}
+                      color="success.main"
                     >
-                      Trạng thái: {field.status}
+                      {Number(field.price).toLocaleString("vi-VN")} VND
                     </Typography>
                   </CardContent>
-                  <CardActions sx={{ justifyContent: "flex-end" }}>
-                    <IconButton
-                      color="primary"
+
+                  <CardActions
+                    sx={{
+                      mt: "auto",
+                      pt: 0,
+                      pb: 1,
+                      px: 1.5,
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <Button
+                      size="small"
                       onClick={() => handleOpenStatusDialog(field)}
+                      startIcon={<Sync fontSize="small" />}
                     >
-                      <Sync />
-                    </IconButton>
+                      Cập nhật trạng thái
+                    </Button>
                     <IconButton
                       color="error"
+                      size="small"
                       onClick={() =>
                         window.confirm("Chắc chắn xóa sân này?") &&
                         axiosClient
@@ -163,16 +308,49 @@ export default function FieldManager() {
                           .catch(() => setError("Không thể xóa sân"))
                       }
                     >
-                      <Delete />
+                      <Delete fontSize="small" />
                     </IconButton>
                   </CardActions>
                 </Card>
               </Grid>
             );
           })}
+
+          {/* Card thêm sân mới */}
+          <Grid item xs={12} sm={6} md={4} lg={3}>
+            <Card
+              sx={{
+                borderRadius: 3,
+                boxShadow: 0,
+                border: "2px dashed #d1d5db",
+                bgcolor: "#f9fafb",
+                height: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                "&:hover": {
+                  borderColor: "#22c55e",
+                  bgcolor: "#ecfdf3",
+                },
+              }}
+              onClick={() => (window.location.href = "/admin/addfield")}
+            >
+              <Box textAlign="center">
+                <IconButton color="success">
+                  <Add />
+                </IconButton>
+                <Typography fontWeight={600}>Thêm sân mới</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Tạo mới một sân bóng
+                </Typography>
+              </Box>
+            </Card>
+          </Grid>
         </Grid>
       )}
 
+      {/* Dialog cập nhật trạng thái */}
       <Dialog
         open={openStatusDialog}
         onClose={handleCloseStatusDialog}
@@ -197,7 +375,11 @@ export default function FieldManager() {
                 ))}
               </Select>
             </FormControl>
-            {error && <Alert severity="error">{error}</Alert>}
+            {error && (
+              <Alert severity="error" sx={{ mt: 2 }}>
+                {error}
+              </Alert>
+            )}
           </DialogContent>
           <DialogActions>
             <Button onClick={handleCloseStatusDialog}>Hủy</Button>

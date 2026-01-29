@@ -2,20 +2,17 @@ import React, { useState, useEffect } from "react";
 import {
   Container,
   Typography,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
   IconButton,
   Alert,
   CircularProgress,
-  Divider,
   Chip,
   Paper,
   Box,
+  Stack,
 } from "@mui/material";
-import CheckIcon from "@mui/icons-material/CheckCircleOutline";
-import CloseIcon from "@mui/icons-material/HighlightOff";
+// Sử dụng icon tròn đậm để giống ảnh
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CancelIcon from "@mui/icons-material/Cancel";
 import UserLayout from "../../layouts/UserLayout";
 import axiosClient from "../../api/axiosClient";
 
@@ -24,6 +21,7 @@ export default function Notifications() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // --- GIỮ NGUYÊN LOGIC FETCH DATA ---
   useEffect(() => {
     const fetchNotifications = async () => {
       setLoading(true);
@@ -40,6 +38,7 @@ export default function Notifications() {
     fetchNotifications();
   }, []);
 
+  // --- GIỮ NGUYÊN LOGIC CONFIRM ---
   const handleConfirm = async (id) => {
     try {
       await axiosClient.put(`/notifications/${id}/confirm`);
@@ -53,6 +52,7 @@ export default function Notifications() {
     }
   };
 
+  // --- GIỮ NGUYÊN LOGIC DELETE ---
   const handleDelete = async (id) => {
     try {
       await axiosClient.delete(`/notifications/${id}`);
@@ -63,126 +63,137 @@ export default function Notifications() {
   };
 
   return (
-    <UserLayout>
-      <Container maxWidth="sm" sx={{ mt: 5 }}>
+    <UserLayout showSidebar={true}>
+      <Container maxWidth="md" sx={{ py: 4 }}>
+        {/* TIÊU ĐỀ GIỐNG ẢNH */}
         <Typography
           variant="h4"
           align="center"
-          mb={3}
-          sx={{ fontWeight: 700, color: "#1976d2", letterSpacing: 1 }}
+          sx={{
+            fontWeight: 700,
+            color: "#1976d2",
+            mb: 4,
+            textTransform: "none", // Không viết hoa toàn bộ nếu muốn giống ảnh
+          }}
         >
           Danh sách thông báo
         </Typography>
-        <Box display="flex" justifyContent="center">
-          <Paper
-            elevation={4}
-            sx={{
-              p: { xs: 1, sm: 2 },
-              maxWidth: 480,
-              width: "100%",
-              borderRadius: 4,
-              bgcolor: "#fff",
-            }}
-          >
-            {loading ? (
-              <Box p={3} textAlign="center">
-                <CircularProgress />
-              </Box>
-            ) : error ? (
-              <Alert severity="error">{error}</Alert>
-            ) : notifications.length === 0 ? (
-              <Alert severity="info">Không có thông báo nào!</Alert>
-            ) : (
-              <List>
-                {notifications.map((noti, idx) => (
-                  <React.Fragment key={noti._id}>
-                    <ListItem
+
+        {loading ? (
+          <Box textAlign="center" py={5}>
+            <CircularProgress />
+          </Box>
+        ) : error ? (
+          <Alert severity="error">{error}</Alert>
+        ) : notifications.length === 0 ? (
+          <Alert severity="info" sx={{ justifyContent: "center" }}>
+            Bạn chưa có thông báo nào!
+          </Alert>
+        ) : (
+          // DANH SÁCH DẠNG THẺ RỜI (STACK)
+          <Stack spacing={2.5}>
+            {notifications.map((noti) => (
+              <Paper
+                key={noti._id}
+                elevation={3}
+                sx={{
+                  p: 3,
+                  borderRadius: 3, // Bo góc tròn như ảnh
+                  display: "flex",
+                  alignItems: "flex-start", // Căn hàng ngang, nội dung lên trên
+                  justifyContent: "space-between",
+                  bgcolor: "#fff",
+                  transition: "transform 0.2s, box-shadow 0.2s",
+                  "&:hover": {
+                    transform: "translateY(-2px)",
+                    boxShadow: 6,
+                  },
+                }}
+              >
+                {/* PHẦN NỘI DUNG BÊN TRÁI */}
+                <Box sx={{ flex: 1, mr: 2 }}>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontSize: "1.1rem",
+                      color: "#333",
+                      mb: 1.5,
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    {noti.content}
+                  </Typography>
+
+                  <Stack
+                    direction={{ xs: "column", sm: "row" }}
+                    alignItems={{ xs: "flex-start", sm: "center" }}
+                    spacing={2}
+                  >
+                    {/* Thời gian text xám nhỏ */}
+                    <Typography
+                      variant="caption"
                       sx={{
-                        borderRadius: 3,
-                        bgcolor: idx % 2 === 0 ? "#f9fafb" : "#f3f7fd",
-                        mb: 1.5,
-                        boxShadow: 1,
-                        px: { xs: 1, sm: 2 },
-                        py: 1.5,
-                        alignItems: "flex-start",
-                        transition: "box-shadow 0.2s",
-                        "&:hover": { boxShadow: 3 },
+                        color: "#6b7280",
+                        fontSize: "0.85rem",
                       }}
-                      secondaryAction={
-                        <Box sx={{ display: "flex", gap: 1 }}>
-                          {noti.status !== "Đã xác nhận" && (
-                            <IconButton
-                              edge="end"
-                              color="success"
-                              title="Xác nhận"
-                              sx={{
-                                "&:hover": { bgcolor: "#e3fcec" },
-                              }}
-                              onClick={() => handleConfirm(noti._id)}
-                            >
-                              <CheckIcon sx={{ fontSize: 26 }} />
-                            </IconButton>
-                          )}
-                          <IconButton
-                            edge="end"
-                            color="error"
-                            title="Xoá"
-                            sx={{
-                              "&:hover": { bgcolor: "#fdecea" },
-                            }}
-                            onClick={() => handleDelete(noti._id)}
-                          >
-                            <CloseIcon sx={{ fontSize: 26 }} />
-                          </IconButton>
-                        </Box>
-                      }
                     >
-                      <ListItemText
-                        primary={
-                          <Typography
-                            fontSize={17}
-                            fontWeight={500}
-                            sx={{ mb: 1 }}
-                          >
-                            {noti.content}
-                          </Typography>
-                        }
-                        secondary={
-                          <Box display="flex" alignItems="center" gap={1}>
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                              sx={{ flexShrink: 0, fontWeight: 500 }}
-                            >
-                              {new Date(noti.created_at).toLocaleString(
-                                "vi-VN"
-                              )}
-                            </Typography>
-                            <Chip
-                              size="small"
-                              color={
-                                noti.status === "Đã xác nhận"
-                                  ? "success"
-                                  : "warning"
-                              }
-                              label={noti.status}
-                              sx={{
-                                minWidth: 110,
-                                borderRadius: 2,
-                                fontSize: 13,
-                                ml: 1,
-                              }}
-                            />
-                          </Box>
-                        }
-                      />
-                    </ListItem>
-                  </React.Fragment>
-                ))}
-              </List>
-            )}
-          </Paper>
-        </Box>
+                      {new Date(noti.created_at).toLocaleString("vi-VN")}
+                    </Typography>
+
+                    {/* Chip trạng thái màu cam/xanh */}
+                    <Chip
+                      label={noti.status || "chưa xác nhận"}
+                      size="small"
+                      sx={{
+                        bgcolor:
+                          noti.status === "Đã xác nhận" ? "#2e7d32" : "#ed6c02", // Xanh đậm hoặc Cam
+                        color: "#fff",
+                        borderRadius: 1.5,
+                        fontWeight: 600,
+                        fontSize: "0.75rem",
+                        height: 26,
+                        px: 0.5,
+                      }}
+                    />
+                  </Stack>
+                </Box>
+
+                {/* PHẦN NÚT BẤM BÊN PHẢI */}
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  {/* Nút xác nhận (Xanh lá) - Chỉ hiện khi chưa xác nhận */}
+                  {noti.status !== "Đã xác nhận" && (
+                    <IconButton
+                      onClick={() => handleConfirm(noti._id)}
+                      sx={{
+                        color: "#4caf50", // Màu xanh lá
+                        p: 0.5,
+                        "&:hover": { bgcolor: "#e8f5e9" },
+                      }}
+                      title="Xác nhận"
+                    >
+                      {/* Icon tròn có dấu tích */}
+                      <CheckCircleIcon sx={{ fontSize: 34, opacity: 0.8 }} />
+                    </IconButton>
+                  )}
+
+                  {/* Nút xóa (Đỏ) */}
+                  <IconButton
+                    onClick={() => handleDelete(noti._id)}
+                    sx={{
+                      color: "#d32f2f", // Màu đỏ
+                      p: 0.5,
+                      "&:hover": { bgcolor: "#ffebee" },
+                    }}
+                    title="Xoá thông báo"
+                  >
+                    {/* Icon tròn có dấu X */}
+                    <CancelIcon sx={{ fontSize: 34, opacity: 0.8 }} />
+                  </IconButton>
+                </Stack>
+              </Paper>
+            ))}
+          </Stack>
+        )}
       </Container>
     </UserLayout>
   );

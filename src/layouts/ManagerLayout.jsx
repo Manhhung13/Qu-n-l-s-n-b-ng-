@@ -1,37 +1,35 @@
 import React from "react";
-import { Box, Toolbar } from "@mui/material";
+import { Box, CssBaseline } from "@mui/material";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 
+// Import Icons cho menu Manager
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
 import PeopleIcon from "@mui/icons-material/People";
 import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
 
+// Menu mặc định cho Manager
 const managerMenu = [
   {
     label: "Dashboard",
     path: "/manager/dashboard",
-    icon: <DashboardIcon fontSize="large" />,
-  },
-  {
-    label: "Sân bóng",
-    path: "/manager/fields",
-    icon: <SportsSoccerIcon fontSize="large" />,
+    icon: <DashboardIcon />,
   },
   {
     label: "Khách hàng",
     path: "/manager/customers",
-    icon: <PeopleIcon fontSize="large" />,
+    icon: <PeopleIcon />,
   },
   {
     label: "Check-in/Check-out",
     path: "/manager/checkin-checkout",
-    icon: <ConfirmationNumberIcon fontSize="large" />,
+    icon: <ConfirmationNumberIcon />,
   },
 ];
 
-const drawerWidth = 88; // Sidebar mini
+// 1. Cập nhật width khớp với file Sidebar.jsx (260px)
+const drawerWidth = 260;
 
 export default function ManagerLayout({
   children,
@@ -39,36 +37,49 @@ export default function ManagerLayout({
   sidebarMenu = managerMenu,
 }) {
   return (
-    <>
+    <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#f5f7fb" }}>
+      <CssBaseline />
+
+      {/* 2. Header cố định */}
       <Header />
 
-      <Box sx={{ display: "flex", bgcolor: "#f5f7fb", minHeight: "100vh" }}>
-        {showSidebar && <Sidebar menuItems={sidebarMenu} mini />}
-
+      {/* 3. Sidebar Container */}
+      {showSidebar && (
         <Box
-          component="main"
+          component="nav"
           sx={{
-            flexGrow: 1,
-            ml: showSidebar ? `${drawerWidth}px` : 0,
-            minHeight: "100vh",
-            transition: "margin-left 0.3s",
+            width: { sm: drawerWidth },
+            flexShrink: 0,
           }}
         >
-          {/* chừa chỗ cho AppBar */}
-          <Toolbar sx={{ minHeight: 64 }} />
-
-          {/* vùng content full width, chỉ chừa padding nhỏ */}
-          <Box
-            sx={{
-              width: "100%",
-              px: 3, // khoảng cách với sidebar
-              py: 3,
-            }}
-          >
-            {children}
-          </Box>
+          {/* Bỏ prop 'mini' vì giờ ta dùng sidebar full 260px */}
+          <Sidebar menuItems={sidebarMenu} />
         </Box>
+      )}
+
+      {/* 4. Main Content: Logic giống hệt UserLayout */}
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1, // Tự động chiếm hết khoảng trống
+          p: 3, // Padding nội dung (24px)
+          mt: "64px", // Đẩy xuống dưới Header
+
+          // Logic tính width:
+          // Có sidebar -> 100% - 260px
+          // Không sidebar -> 100%
+          width: {
+            sm: showSidebar ? `calc(100% - ${drawerWidth}px)` : "100%",
+          },
+
+          overflowX: "hidden",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        {/* Wrapper nội dung full width */}
+        <Box sx={{ width: "100%" }}>{children}</Box>
       </Box>
-    </>
+    </Box>
   );
 }

@@ -5,11 +5,6 @@ import {
   Typography,
   TextField,
   Button,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
   IconButton,
   Dialog,
   DialogTitle,
@@ -17,6 +12,9 @@ import {
   DialogActions,
   Snackbar,
   Alert,
+  Box,
+  Stack,
+  Chip,
 } from "@mui/material";
 import { Add, Edit, Delete } from "@mui/icons-material";
 import axiosClient from "../../api/axiosClient";
@@ -25,7 +23,6 @@ export default function ServicesAdmin() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Dialog state
   const [openDialog, setOpenDialog] = useState(false);
   const [editingService, setEditingService] = useState(null);
   const [form, setForm] = useState({ name: "", price: "" });
@@ -36,11 +33,10 @@ export default function ServicesAdmin() {
     severity: "success",
   });
 
-  // Load danh sách dịch vụ ngoài
   const fetchServices = async () => {
     setLoading(true);
     try {
-      const res = await axiosClient.get("/admin/services"); // endpoint lấy danh sách
+      const res = await axiosClient.get("/admin/services");
       setServices(res.data);
     } catch (error) {
       setSnackbar({
@@ -56,7 +52,6 @@ export default function ServicesAdmin() {
     fetchServices();
   }, []);
 
-  // Mở dialog thêm hoặc sửa
   const handleOpenDialog = (service = null) => {
     if (service) {
       setEditingService(service);
@@ -72,14 +67,11 @@ export default function ServicesAdmin() {
     setOpenDialog(false);
   };
 
-  // Xử lý nhập form
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // Thêm hoặc sửa dịch vụ
   const handleSave = async () => {
-    // validate đơn giản
     if (!form.name || !form.price || isNaN(form.price)) {
       setSnackbar({
         open: true,
@@ -90,7 +82,6 @@ export default function ServicesAdmin() {
     }
     try {
       if (editingService) {
-        // Sửa
         await axiosClient.put(`/admin/services/${editingService.id}`, {
           name: form.name,
           price: parseFloat(form.price),
@@ -101,7 +92,6 @@ export default function ServicesAdmin() {
           severity: "success",
         });
       } else {
-        // Thêm mới
         await axiosClient.post("/admin/services", {
           name: form.name,
           price: parseFloat(form.price),
@@ -115,7 +105,6 @@ export default function ServicesAdmin() {
       fetchServices();
       handleCloseDialog();
     } catch (error) {
-      console.error(error);
       setSnackbar({
         open: true,
         message: "Lỗi khi lưu dịch vụ",
@@ -124,7 +113,6 @@ export default function ServicesAdmin() {
     }
   };
 
-  // Xóa dịch vụ
   const handleDelete = async (id) => {
     try {
       await axiosClient.delete(`/admin/services/${id}`);
@@ -144,62 +132,140 @@ export default function ServicesAdmin() {
   };
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Quản lý dịch vụ ngoài
-      </Typography>
-      <Button
-        variant="contained"
-        startIcon={<Add />}
-        sx={{ mb: 2 }}
-        onClick={() => handleOpenDialog()}
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      {/* Header + nút thêm */}
+      <Box
+        mb={3}
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        flexWrap="wrap"
+        gap={2}
       >
-        Thêm dịch vụ
-      </Button>
+        <Box>
+          <Typography variant="h4" fontWeight={700}>
+            Quản lý dịch vụ đính kèm
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Tùy chỉnh danh mục đồ uống, thức ăn và trang phục cho thuê.
+          </Typography>
+        </Box>
 
-      <Paper>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Tên dịch vụ</TableCell>
-              <TableCell>Giá (VNĐ)</TableCell>
-              <TableCell align="right">Hành động</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {services.map((service) => (
-              <TableRow key={service.id}>
-                <TableCell>{service.name}</TableCell>
-                <TableCell>{service.price.toLocaleString("vi-VN")}</TableCell>
-                <TableCell align="right">
-                  <IconButton
-                    color="primary"
-                    onClick={() => handleOpenDialog(service)}
-                  >
-                    <Edit />
-                  </IconButton>
-                  <IconButton
-                    color="error"
-                    onClick={() => handleDelete(service.id)}
-                  >
-                    <Delete />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-            {!loading && services.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={3} align="center">
-                  Không có dịch vụ nào
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </Paper>
+        <Button
+          variant="contained"
+          startIcon={<Add />}
+          onClick={() => handleOpenDialog()}
+          sx={{
+            bgcolor: "#22c55e",
+            borderRadius: 999,
+            px: 3,
+            "&:hover": { bgcolor: "#16a34a" },
+          }}
+        >
+          Thêm dịch vụ
+        </Button>
+      </Box>
+
+      {/* Danh sách dịch vụ */}
+      <Box mb={1}>
+        <Typography variant="subtitle2" color="text.secondary">
+          Danh sách dịch vụ đang hoạt động
+        </Typography>
+      </Box>
+
+      <Stack spacing={1.5}>
+        {services.map((service) => (
+          <Paper
+            key={service.id}
+            sx={{
+              px: 2,
+              py: 1.5,
+              borderRadius: 3,
+              boxShadow: 0,
+              border: "1px solid #e5e7eb",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <Box display="flex" alignItems="center" gap={1.5}>
+              <Box
+                sx={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: "999px",
+                  bgcolor: "#dcfce7",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#16a34a",
+                  fontWeight: 700,
+                  fontSize: 18,
+                }}
+              >
+                {service.name.charAt(0).toUpperCase()}
+              </Box>
+              <Box>
+                <Typography fontWeight={600}>{service.name}</Typography>
+                <Chip
+                  label="DỊCH VỤ"
+                  size="small"
+                  sx={{
+                    mt: 0.3,
+                    bgcolor: "#e5f2ff",
+                    color: "#2563eb",
+                    fontSize: 10,
+                    fontWeight: 600,
+                  }}
+                />
+              </Box>
+            </Box>
+
+            <Box display="flex" alignItems="center" gap={3}>
+              <Typography
+                fontWeight={700}
+                color="success.main"
+                sx={{ minWidth: 120, textAlign: "right" }}
+              >
+                {service.price.toLocaleString("vi-VN")} VND
+              </Typography>
+              <IconButton
+                color="primary"
+                onClick={() => handleOpenDialog(service)}
+              >
+                <Edit />
+              </IconButton>
+              <IconButton
+                color="error"
+                onClick={() => handleDelete(service.id)}
+              >
+                <Delete />
+              </IconButton>
+            </Box>
+          </Paper>
+        ))}
+
+        {!loading && services.length === 0 && (
+          <Paper
+            sx={{
+              py: 4,
+              borderRadius: 3,
+              textAlign: "center",
+              color: "text.secondary",
+            }}
+          >
+            Không có dịch vụ nào
+          </Paper>
+        )}
+      </Stack>
 
       {/* Dialog thêm/sửa */}
-      <Dialog open={openDialog} onClose={handleCloseDialog}>
+      <Dialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>
           {editingService ? "Cập nhật dịch vụ" : "Thêm dịch vụ"}
         </DialogTitle>
@@ -233,7 +299,7 @@ export default function ServicesAdmin() {
         </DialogActions>
       </Dialog>
 
-      {/* Thông báo */}
+      {/* Snackbar */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import demoFieldImage from "../../assets/san-bong-mini.jpg";
+import demoFieldImage from "../../assets/san-bong-mini.jpg"; // Đảm bảo đường dẫn đúng
 import {
   Grid,
   Box,
@@ -21,6 +21,7 @@ import {
   Dialog,
   DialogContent,
   IconButton,
+  Divider,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import SearchIcon from "@mui/icons-material/Search";
@@ -53,7 +54,6 @@ function generateTimeSlots(start = "05:00", end = "23:30") {
 }
 const slotOptions = generateTimeSlots();
 
-// Map trạng thái thành màu chip trực quan
 const statusColors = {
   "sân hoạt động bình thường": "success",
   "sân đang bảo trì": "warning",
@@ -77,7 +77,6 @@ export default function Home() {
   const [openBooking, setOpenBooking] = useState(false);
   const [bookingInfo, setBookingInfo] = useState(null);
 
-  // Kiểm tra giờ hợp lệ
   useEffect(() => {
     if (startTime && endTime && startTime >= endTime) {
       setTimeError(
@@ -86,7 +85,6 @@ export default function Home() {
     } else setTimeError("");
   }, [startTime, endTime]);
 
-  // Chỉ fetch khi đã chọn đủ date + giờ và không lỗi
   useEffect(() => {
     if (!date || !startTime || !endTime || timeError) {
       setFields([]);
@@ -146,14 +144,14 @@ export default function Home() {
   }
 
   return (
-    <UserLayout>
-      {/* Wrapper chung: banner + filter + list đều căn theo maxWidth này */}
+    <UserLayout showSidebar={true}>
       <Box
         sx={{
           width: "100%",
-          maxWidth: 1180,
-          mx: "auto",
-          pb: 6,
+          px: { xs: 2, md: 3 },
+          pb: 4,
+          bgcolor: "#f5f7fb",
+          minHeight: "100vh",
         }}
       >
         {/* BANNER */}
@@ -162,10 +160,10 @@ export default function Home() {
             position: "relative",
             height: 260,
             overflow: "hidden",
-            borderRadius: 2,
+            borderRadius: 3,
+            boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
           }}
         >
-          {/* Ảnh nền – không chặn click */}
           <Box
             sx={{
               position: "absolute",
@@ -175,144 +173,127 @@ export default function Home() {
               backgroundSize: "cover",
               backgroundPosition: "center",
               filter: "brightness(0.85)",
-              pointerEvents: "none",
             }}
           />
-          {/* Lớp phủ – không chặn click */}
           <Box
             sx={{
               position: "absolute",
               inset: 0,
-              bgcolor: "rgba(0,0,0,0.35)",
-              pointerEvents: "none",
+              bgcolor: "rgba(0,0,0,0.3)",
             }}
           />
-          {/* Nội dung chữ */}
           <Box
             sx={{
               position: "relative",
               zIndex: 1,
               height: "100%",
               display: "flex",
+              flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
               px: 2,
-              pointerEvents: "none",
+              textAlign: "center",
+              color: "#fff",
             }}
           >
-            <Box
+            <Typography
+              variant="h3"
               sx={{
-                width: "100%",
-                textAlign: "center",
-                color: "#fff",
+                fontWeight: 800,
+                mb: 1,
+                fontSize: { xs: 24, md: 36 },
+                textShadow: "0 2px 10px rgba(0,0,0,0.5)",
               }}
             >
-              <Typography
-                variant="h3"
-                sx={{
-                  fontWeight: 800,
-                  mb: 1,
-                  fontSize: { xs: 28, md: 36 },
-                  textShadow: "0 2px 6px rgba(0,0,0,0.45)",
-                }}
-              >
-                Tìm Sân Cháy{" "}
-                <Box component="span" sx={{ color: "#34ff85" }}>
-                  Đam Mê
-                </Box>
-              </Typography>
-              <Typography
-                variant="h3"
-                sx={{
-                  fontWeight: 800,
-                  mb: 2,
-                  fontSize: { xs: 24, md: 32 },
-                  textShadow: "0 2px 6px rgba(0,0,0,0.45)",
-                }}
-              >
-                Nâng Tầm Trận Đấu
-              </Typography>
-              <Typography
-                sx={{
-                  maxWidth: 600,
-                  mx: "auto",
-                  fontSize: 14,
-                  textShadow: "0 1px 3px rgba(0,0,0,0.4)",
-                }}
-              >
-                Đặt sân cỏ nhân tạo chất lượng cao, vị trí thuận tiện, giá tốt
-                và thanh toán linh hoạt.
-              </Typography>
-            </Box>
+              Tìm Sân Cháy{" "}
+              <Box component="span" sx={{ color: "#4ade80" }}>
+                Đam Mê
+              </Box>
+            </Typography>
+            <Typography
+              variant="h4"
+              sx={{
+                fontWeight: 700,
+                fontSize: { xs: 20, md: 28 },
+                opacity: 0.9,
+              }}
+            >
+              Nâng Tầm Trận Đấu
+            </Typography>
           </Box>
         </Box>
 
-        {/* Card filter nổi trên banner, cùng chiều rộng với banner */}
+        {/* FILTER BAR */}
         <Box
           sx={{
-            mt: -8,
+            mt: -4,
+            mx: { xs: 0, md: 4 },
             position: "relative",
             zIndex: 2,
+            bgcolor: "#fff",
+            borderRadius: 3,
+            boxShadow:
+              "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
+            p: 3,
           }}
         >
-          <Box
-            sx={{
-              bgcolor: "#fff",
-              borderRadius: 3,
-              boxShadow: "0 12px 40px rgba(15,23,42,0.18)",
-              p: 2.5,
-              mb: 3,
-            }}
+          <Stack
+            direction={{ xs: "column", lg: "row" }}
+            spacing={2}
+            alignItems="center"
           >
+            <TextField
+              placeholder="Tìm tên sân, địa điểm..."
+              variant="outlined"
+              size="medium"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              fullWidth
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon color="action" />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{ flex: 2 }}
+            />
+
+            <FormControl sx={{ minWidth: 120, flex: 1 }} size="medium">
+              <InputLabel>Loại sân</InputLabel>
+              <Select
+                value={type}
+                label="Loại sân"
+                onChange={(e) => setType(e.target.value)}
+              >
+                {fieldTypes.map((opt) => (
+                  <MenuItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <TextField
+              label="Ngày đá"
+              type="date"
+              size="medium"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              sx={{ minWidth: 150, flex: 1 }}
+            />
+
             <Stack
-              direction={{ xs: "column", md: "row" }}
+              direction="row"
               spacing={2}
-              alignItems={{ xs: "stretch", md: "center" }}
+              sx={{ flex: 1.5, width: "100%" }}
             >
-              <TextField
-                placeholder="Tìm sân, quận, hoặc địa chỉ..."
-                variant="outlined"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon />
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{ flex: 2, minWidth: 220 }}
-              />
-
-              <FormControl sx={{ minWidth: 140 }}>
-                <InputLabel>Loại sân</InputLabel>
-                <Select
-                  value={type}
-                  label="Loại sân"
-                  onChange={(e) => setType(e.target.value)}
-                >
-                  {fieldTypes.map((opt) => (
-                    <MenuItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              <TextField
-                label="Ngày"
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                InputLabelProps={{ shrink: true }}
-                sx={{ minWidth: 150 }}
-              />
-
-              <FormControl sx={{ minWidth: 130 }}>
-                <InputLabel>Giờ bắt đầu</InputLabel>
+              <FormControl fullWidth size="medium">
+                <InputLabel>Bắt đầu</InputLabel>
                 <Select
                   value={startTime}
-                  label="Giờ bắt đầu"
+                  label="Bắt đầu"
                   onChange={(e) => setStartTime(e.target.value)}
                 >
                   {slotOptions.map((slot) => (
@@ -323,11 +304,11 @@ export default function Home() {
                 </Select>
               </FormControl>
 
-              <FormControl sx={{ minWidth: 130 }}>
-                <InputLabel>Giờ kết thúc</InputLabel>
+              <FormControl fullWidth size="medium">
+                <InputLabel>Kết thúc</InputLabel>
                 <Select
                   value={endTime}
-                  label="Giờ kết thúc"
+                  label="Kết thúc"
                   onChange={(e) => setEndTime(e.target.value)}
                 >
                   {slotOptions.map((slot) => (
@@ -337,52 +318,196 @@ export default function Home() {
                   ))}
                 </Select>
               </FormControl>
-
-              <Button
-                variant="contained"
-                size="large"
-                sx={{
-                  bgcolor: "#00c853",
-                  px: 4,
-                  height: 48,
-                  "&:hover": { bgcolor: "#00b34a" },
-                }}
-              >
-                TÌM KIẾM
-              </Button>
             </Stack>
 
-            {timeError && (
-              <Alert severity="warning" sx={{ mt: 2 }}>
-                {timeError}
-              </Alert>
-            )}
-            {error && !timeError && (
-              <Alert severity="error" sx={{ mt: 2 }}>
-                {error}
-              </Alert>
-            )}
-            {!date || !startTime || !endTime ? (
-              <Alert severity="info" sx={{ mt: 2 }}>
-                Vui lòng chọn ngày, giờ bắt đầu và giờ kết thúc để hiển thị danh
-                sách sân.
-              </Alert>
-            ) : null}
-          </Box>
+            <Button
+              variant="contained"
+              size="large"
+              sx={{
+                bgcolor: "#00BA74",
+                px: 4,
+                height: 56,
+                fontWeight: "bold",
+                boxShadow: "none",
+                "&:hover": {
+                  bgcolor: "#00965E",
+                  boxShadow: "0 4px 12px rgba(0,186,116,0.3)",
+                },
+              }}
+            >
+              TÌM KIẾM
+            </Button>
+          </Stack>
+
+          {(timeError || error) && (
+            <Alert severity={timeError ? "warning" : "error"} sx={{ mt: 2 }}>
+              {timeError || error}
+            </Alert>
+          )}
+          {(!date || !startTime || !endTime) && (
+            <Alert
+              severity="info"
+              sx={{
+                mt: 2,
+                border: "1px solid #bae6fd",
+                bgcolor: "#e0f2fe",
+                color: "#0369a1",
+              }}
+            >
+              Vui lòng chọn <b>Ngày</b> và <b>Khung giờ</b> để xem sân trống.
+            </Alert>
+          )}
         </Box>
 
-        {/* Popup booking */}
+        {/* DANH SÁCH SÂN */}
+        <Box sx={{ mt: 4 }}>
+          {loading ? (
+            <Box textAlign="center" py={5}>
+              <CircularProgress color="success" />
+            </Box>
+          ) : (
+            <Grid container spacing={3}>
+              {fields.map((field) => (
+                <Grid item xs={12} sm={6} md={4} lg={3} xl={2.4} key={field.id}>
+                  <Card
+                    sx={{
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                      borderRadius: 3,
+                      border: "1px solid #e0e0e0",
+                      boxShadow: "none",
+                      transition: "all 0.3s ease",
+                      "&:hover": {
+                        transform: "translateY(-4px)",
+                        boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
+                        borderColor: "transparent",
+                      },
+                    }}
+                  >
+                    <CardMedia
+                      component="img"
+                      height="180"
+                      image={field.image_url || demoFieldImage}
+                      alt={field.name}
+                      sx={{ objectFit: "cover" }}
+                    />
+                    <CardContent sx={{ flexGrow: 1, p: 2 }}>
+                      <Stack
+                        direction="row"
+                        justifyContent="space-between"
+                        alignItems="start"
+                        mb={1}
+                      >
+                        <Typography
+                          variant="h6"
+                          fontWeight="bold"
+                          noWrap
+                          sx={{ maxWidth: "70%" }}
+                        >
+                          {field.name}
+                        </Typography>
+                        <Chip
+                          label={field.type}
+                          size="small"
+                          sx={{
+                            bgcolor: "#F3F4F6",
+                            fontWeight: "bold",
+                            color: "#374151",
+                          }}
+                        />
+                      </Stack>
+
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        noWrap
+                        sx={{
+                          mb: 2,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 0.5,
+                        }}
+                      >
+                        📍 {field.location}
+                      </Typography>
+
+                      <Divider sx={{ my: 1.5, borderStyle: "dashed" }} />
+
+                      <Stack
+                        direction="row"
+                        justifyContent="space_between"
+                        alignItems="center"
+                        sx={{ justifyContent: "space-between" }}
+                      >
+                        <Typography
+                          variant="subtitle1"
+                          fontWeight="bold"
+                          color="#00BA74"
+                        >
+                          {formatVND(field.price)}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          / 90p
+                        </Typography>
+                      </Stack>
+
+                      <Box mt={2}>
+                        {field.booked ? (
+                          <Button
+                            fullWidth
+                            variant="outlined"
+                            color="warning"
+                            disabled
+                          >
+                            Đã có người đặt
+                          </Button>
+                        ) : (
+                          <Button
+                            fullWidth
+                            variant="contained"
+                            sx={{
+                              bgcolor: "#00BA74",
+                              "&:hover": { bgcolor: "#00965E" },
+                            }}
+                            onClick={() => handleOpenBooking(field)}
+                          >
+                            Đặt sân ngay
+                          </Button>
+                        )}
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          )}
+
+          {!loading &&
+            fields.length === 0 &&
+            date &&
+            startTime &&
+            endTime &&
+            !error && (
+              <Box textAlign="center" py={5}>
+                <Typography variant="h6" color="text.secondary">
+                  Không tìm thấy sân phù hợp trong khung giờ này.
+                </Typography>
+              </Box>
+            )}
+        </Box>
+
+        {/* Popup Booking */}
         <Dialog
           open={openBooking}
           onClose={() => setOpenBooking(false)}
           maxWidth="sm"
           fullWidth
         >
-          <DialogContent sx={{ position: "relative", pt: 2 }}>
+          <DialogContent sx={{ position: "relative", pt: 4, pb: 4 }}>
             <IconButton
-              aria-label="close"
               onClick={() => setOpenBooking(false)}
-              sx={{ position: "absolute", right: 8, top: 8, zIndex: 10 }}
+              sx={{ position: "absolute", right: 8, top: 8 }}
             >
               <CloseIcon />
             </IconButton>
@@ -394,162 +519,6 @@ export default function Home() {
             )}
           </DialogContent>
         </Dialog>
-
-        {/* Danh sách sân bóng – nằm trong cùng wrapper, nên ngang với banner */}
-        {loading ? (
-          <Box mt={6} textAlign="center">
-            <CircularProgress />
-          </Box>
-        ) : (
-          <Grid container spacing={3} alignItems="stretch">
-            {fields.map((field) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={field.id}>
-                <Card
-                  sx={{
-                    height: 370,
-                    minWidth: 260,
-                    display: "flex",
-                    flexDirection: "column",
-                    borderRadius: 3,
-                    boxShadow: 2,
-                    transition: "transform 0.2s, box-shadow 0.2s",
-                    "&:hover": {
-                      transform: "translateY(-6px)",
-                      boxShadow: 6,
-                    },
-                  }}
-                >
-                  <CardMedia
-                    component="img"
-                    height="150"
-                    alt={field.name}
-                    image={field.image_url || demoFieldImage}
-                    sx={{
-                      objectFit: "cover",
-                      borderRadius: "12px 12px 0 0",
-                    }}
-                  />
-                  <CardContent
-                    sx={{
-                      flexGrow: 1,
-                      display: "flex",
-                      flexDirection: "column",
-                      pt: 1.5,
-                    }}
-                  >
-                    <Typography variant="h6" noWrap>
-                      {field.name}
-                    </Typography>
-                    <Typography
-                      color="text.secondary"
-                      sx={{
-                        fontSize: 13,
-                        mb: 1,
-                        textOverflow: "ellipsis",
-                        overflow: "hidden",
-                      }}
-                      noWrap
-                    >
-                      {field.location}
-                    </Typography>
-
-                    <Box
-                      mt={0.5}
-                      mb={1}
-                      minHeight={38}
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1,
-                        justifyContent: "center",
-                      }}
-                    >
-                      <Chip
-                        label={field.status || "Không rõ trạng thái"}
-                        color={statusColors[field.status] || defaultStatusColor}
-                        size="small"
-                        sx={{
-                          minWidth: 90,
-                          justifyContent: "center",
-                          borderRadius: 2,
-                          fontWeight: 500,
-                        }}
-                      />
-                      <Chip
-                        label={field.type}
-                        color="info"
-                        size="small"
-                        sx={{
-                          minWidth: 60,
-                          justifyContent: "center",
-                          borderRadius: 2,
-                        }}
-                      />
-                      {field.status !== "sân đang bảo trì" && (
-                        <Chip
-                          label={
-                            field.booked
-                              ? `Đã đặt: ${field.booked}`
-                              : "Trống khung giờ này"
-                          }
-                          color={field.booked ? "warning" : "success"}
-                          size="small"
-                          sx={{
-                            minWidth: 110,
-                            justifyContent: "center",
-                            borderRadius: 2,
-                            backgroundColor: field.booked
-                              ? "#ffe082"
-                              : "#bbf7d0",
-                            color: field.booked ? "#8d6e63" : "#218838",
-                            fontWeight: 500,
-                            fontSize: 13,
-                          }}
-                        />
-                      )}
-                    </Box>
-
-                    <Typography
-                      variant="subtitle1"
-                      sx={{ mb: 1, fontWeight: "bold", minHeight: 28 }}
-                    >
-                      {formatVND(field.price)} / trận/90 phút
-                    </Typography>
-
-                    <Box sx={{ flexGrow: 1 }} />
-
-                    <Button
-                      fullWidth
-                      variant="contained"
-                      color="primary"
-                      disabled={Boolean(field.booked)}
-                      sx={{
-                        mt: 1,
-                        borderRadius: 1.5,
-                        fontWeight: 700,
-                        fontSize: 15,
-                        letterSpacing: "0.5px",
-                      }}
-                      onClick={() => handleOpenBooking(field)}
-                    >
-                      Đặt sân
-                    </Button>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-            {!fields.length &&
-              date &&
-              startTime &&
-              endTime &&
-              !loading &&
-              !error && (
-                <Grid item xs={12}>
-                  <Alert severity="info">Không có sân phù hợp</Alert>
-                </Grid>
-              )}
-          </Grid>
-        )}
       </Box>
     </UserLayout>
   );
