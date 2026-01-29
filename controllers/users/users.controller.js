@@ -25,8 +25,10 @@ exports.login = async (req, res) => {
   const valid = await bcrypt.compare(password, user.password);
   if (!valid) return res.status(400).json({ message: "Sai email/mật khẩu" });
   delete user.password;
+  const payload = { id: user.id, role: user.role };
   const token = jwt.sign({ id: user.id, role: user.role }, SECRET, {
     expiresIn: "7d",
   });
+  console.log("LOGIN:", payload, token);
   res.json({ user, token });
 };

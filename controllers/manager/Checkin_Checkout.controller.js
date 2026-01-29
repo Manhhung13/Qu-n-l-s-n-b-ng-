@@ -35,13 +35,13 @@ exports.checkinBooking = async (req, res) => {
    JOIN users u ON b.user_id = u.id
    JOIN fields f ON b.field_id = f.id
    WHERE b.id = ?`,
-      [bookingId]
+      [bookingId],
     );
     const booking = bookingRows[0];
     const totalPrice = getBookingSlotPrice(
       booking.start_time,
       booking.end_time,
-      booking.fieldPrice
+      booking.fieldPrice,
     );
 
     // 4. Gửi notification vào bảng notifications
@@ -78,7 +78,7 @@ exports.checkinBooking = async (req, res) => {
 
     await db.execute(
       "INSERT INTO notifications (user_id, content, type, is_read, created_at, status) VALUES (?, ?, ?, 0, NOW(), ?)",
-      [booking.user_id, notificationContent, "xac nhan", "chưa xác nhận"]
+      [booking.user_id, notificationContent, "xac nhan", "chưa xác nhận"],
     );
     // console.log("MAIL_USER:", process.env.tk_email);
     //console.log("MAIL_PASS:", process.env.mk_email);
@@ -99,7 +99,7 @@ exports.checkinBooking = async (req, res) => {
       html: `
     <div style="font-family: Arial,sans-serif; background: #f7f7f7; padding: 20px; border-radius: 8px; max-width: 500px; margin: auto;">
       <div style="text-align:center;">
-        <img src="https://www.sporta.vn/assets/tng_review-6d1119a94bbfe3e0a736554e2067e97cd1b1ed209f7d729a4269b79106606c7d.png" alt="Logo Sân Bóng" style="width:100px; margin-bottom:16px;" />
+        <img src="https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/background_bong_da_0_7b8d7f07d4.jpg" alt="Logo Sân Bóng" style="width:100px; margin-bottom:16px;" />
       </div>
       <h2 style="color: #1e90ff;">Đặt sân thành công!</h2>
       <p>Kính gửi <b>${booking.userName}</b>, bạn đã đặt sân thành công tại <b>${booking.fieldName}</b>.</p>
@@ -146,7 +146,7 @@ exports.checkoutBooking = async (req, res) => {
       for (const item of services) {
         await db.execute(
           "INSERT INTO booking_services (booking_id, service_id, quantity) VALUES (?, ?, ?)",
-          [bookingId, item.serviceId, item.quantity]
+          [bookingId, item.serviceId, item.quantity],
         );
       }
     }
